@@ -218,6 +218,25 @@ svg text{font-family:inherit;font-variant-numeric:tabular-nums}
 table.ctab tr.hl td{background:var(--panel2)}
 .kpi .spark-w{margin-top:8px}
 .kpi .spark{color:var(--k);display:block}
+
+/* ===== 多维透视重构（双链路蒸馏 / 主播规律矩阵 / 月度交叉） ===== */
+.kpi6{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:14px}
+.kpi6 .kpi{padding:12px 13px}
+.kpi6 .kpi .t{font-size:11px;margin-bottom:5px}
+.kpi6 .kpi .v{font-size:19px}
+.funnel2>div{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.mtx,.mg{border-collapse:collapse;font-size:13px;width:100%}
+.mtx td,.mtx th,.mg td,.mg th{text-align:center;padding:0;border:1px solid var(--panel)}
+.mtx .rh,.mg .rh{text-align:right;padding-right:10px;font-size:12px;color:var(--tx2);white-space:nowrap;font-weight:600}
+.mtx .rh-h,.mg .rh-h{text-align:left;font-size:11px;color:var(--tx3);padding-left:8px}
+.mtx th,.mg th{font-size:11px;color:var(--tx3);padding:6px 2px;background:var(--panel2);font-weight:600}
+.mtx .mtc,.mg .mtc{padding:9px 4px;font-size:11.5px;font-weight:600;border-radius:4px;color:#fff}
+.mtx td:hover .mtc,.mg td:hover .mtc{filter:brightness(1.08);outline:1px solid var(--tx3)}
+.mtx tr.focus,.mg tr.focus{outline:2px solid var(--pri);outline-offset:-2px}
+.mg-head{display:flex;align-items:center;gap:10px;margin:12px 0 6px}
+.mt-split{height:1px;background:var(--line2);margin:14px 0}
+@media(max-width:1200px){.kpi6{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:900px){.kpi6{grid-template-columns:repeat(2,1fr)}}
 </style>
 
 <script>window.REMOTE_DATA_URL="data.json";window.SYNC_INTERVAL_MS=15*60*1000;</script>
@@ -345,19 +364,42 @@ window.__PRELOADED__={"meta": {"source": "飞书多维表格 · 迈科代理直�
     <div class="anchors" id="anchorCards"></div>
   </div>
 
-  <!-- 多维透视 -->
+  <!-- 多维透视（重构：双链路蒸馏 + 主播规律矩阵 + 月度交叉 + 热力图） -->
   <div class="page" id="p-pivot">
+    <!-- 区块A 双链路蒸馏 -->
     <div class="card mb14">
-      <div class="card-h"><h3>主播 × 时段 热力图</h3><div class="sp"></div><div class="chips" id="pivotMetric"></div></div>
-      <div class="card-b"><div id="heatChart"></div></div>
+      <div class="card-h"><h3>链路蒸馏 · 消耗 → 转化 → 成本</h3><div class="sp"></div><span class="sub">基于当前筛选范围</span></div>
+      <div class="card-b">
+        <div class="kpi6" id="kpi6"></div>
+        <div class="grid2 funnel2">
+          <div><div class="ch-h">链路① · 成本转化链</div><div id="funnelCost"></div></div>
+          <div><div class="ch-h">链路② · 流量转化链</div><div id="funnelFlow"></div></div>
+        </div>
+      </div>
     </div>
-    <div class="grid2 mb14">
-      <div class="card"><div class="card-h"><h3>星期规律</h3></div><div class="card-b"><div id="wdChart"></div></div></div>
-      <div class="card"><div class="card-h"><h3>场次属性分布</h3></div><div class="card-b"><div id="slotChart"></div></div></div>
+    <!-- 区块B 主播规律矩阵 -->
+    <div class="card mb14">
+      <div class="card-h"><h3>主播规律矩阵</h3><div class="sp"></div><div class="chips" id="matrixDim"></div></div>
+      <div class="card-b" style="padding-top:0">
+        <div class="sub" style="padding:10px 2px 4px">点击单元格联动聚焦主播 · 切换维度看「星期 / 场次」规律</div>
+        <div class="tw"><table class="mtx" id="matrixChart"></table></div>
+      </div>
     </div>
+    <!-- 区块C 月度交叉可视化 -->
+    <div class="card mb14">
+      <div class="card-h"><h3>月度交叉可视化</h3></div>
+      <div class="card-b">
+        <div class="ch-h">月度趋势 · 消耗 / 留资 / 单线索成本</div>
+        <div id="monthTrend"></div>
+        <div class="mt-split"></div>
+        <div class="mg-head"><span class="ch-h" style="border:0;margin:0;padding:0">月份 × 主播 热力网格</span><div class="sp"></div><div class="chips" id="monthMetric"></div></div>
+        <div class="tw"><table class="mg" id="monthGrid"></table></div>
+      </div>
+    </div>
+    <!-- 区块D 热力图（精修保留） -->
     <div class="card">
-      <div class="card-h"><h3>月度汇总</h3></div>
-      <div class="card-b" style="padding:0"><div class="tw"><table id="monthTable"></table></div></div>
+      <div class="card-h"><h3>主播 × 单小时产量 热力图</h3><div class="sp"></div><div class="chips" id="pivotMetric"></div></div>
+      <div class="card-b"><div id="heatChart"></div></div>
     </div>
   </div>
 
@@ -410,7 +452,7 @@ var PAL = ['#2563eb','#0e9f6e','#f59e0b','#8b5cf6','#ec4899','#06b6d4','#ef4444'
 var BUCKETS = ['早间 06-10','午间 10-14','下午 14-18','晚间 18-22','深夜 22-06'];
 var WD = ['周一','周二','周三','周四','周五','周六','周日'];
 var DATA = null, SESS = [], VIEW = [];
-var state = { d1:'', d2:'', anchor:'', slot:'', trend:'leads', pivot:'lph', sortKey:'date', sortDesc:true, focus:'', crossDim:'anchor', crossMetric:'leads' };
+var state = { d1:'', d2:'', anchor:'', slot:'', trend:'leads', pivot:'lph', sortKey:'date', sortDesc:true, focus:'', crossDim:'anchor', crossMetric:'leads', pivotDim:'wd', monthMetric:'leads' };
 
 /* ==================== 工具 ==================== */
 function $(s){ return document.querySelector(s); }
@@ -843,9 +885,9 @@ function renderAnchorCards(){
 function setFocus(enc){
   var name=decodeURIComponent(enc);
   state.focus = (state.focus===name) ? '' : name;
-  renderScatter(); renderAnchorCards(); renderHeat(); renderCross(); updateFocusBar();
+  renderScatter(); renderAnchorCards(); renderHeat(); renderCross(); renderMatrix(); renderMonthGrid(); updateFocusBar();
 }
-function clearFocus(){ state.focus=''; renderScatter(); renderAnchorCards(); renderHeat(); renderCross(); updateFocusBar(); }
+function clearFocus(){ state.focus=''; renderScatter(); renderAnchorCards(); renderHeat(); renderCross(); renderMatrix(); renderMonthGrid(); updateFocusBar(); }
 function updateFocusBar(){
   var el=document.getElementById('focusBar'); if(!el) return;
   if(state.focus){ el.style.display='inline-flex'; el.querySelector('.fb-n').textContent=state.focus; }
@@ -1016,7 +1058,7 @@ var PIVOT_M=[
 function renderHeat(){
   var m=PIVOT_M.filter(function(x){return x.k===state.pivot;})[0];
   var byA={}; VIEW.forEach(function(s){ (byA[s.a]=byA[s.a]||[]).push(s); });
-  var names=Object.keys(byA).filter(function(k){ return byA[k].length>=3; })
+  var names=Object.keys(byA).filter(function(k){ return byA[k].length>=1; })
     .sort(function(x,y){ return agg(byA[y]).leads-agg(byA[x]).leads; }).slice(0,14);
   if(!names.length){ $('#heatChart').innerHTML='<div class="empty">数据不足</div>'; return; }
 
@@ -1054,85 +1096,192 @@ function renderHeat(){
     h+='<td><div class="hc" style="background:var(--panel2);color:var(--tx2);font-weight:700">'+(tv==null?'—':m.fmt(tv))+'</div></td></tr>';
   });
   h+='</tbody></table>';
-  $('#heatChart').innerHTML=h+'<div class="lg"><span><i style="background:rgb(224,45,60)"></i>较差</span><span><i style="background:rgb(245,158,11)"></i>中等</span><span><i style="background:rgb(14,159,110)"></i>较优</span><span style="color:var(--tx3)">仅显示 ≥3 场的主播</span></div>';
+  $('#heatChart').innerHTML=h+'<div class="lg"><span><i style="background:rgb(224,45,60)"></i>较差</span><span><i style="background:rgb(245,158,11)"></i>中等</span><span><i style="background:rgb(14,159,110)"></i>较优</span><span style="color:var(--tx3)">仅显示 ≥1 场的主播</span></div>';
 }
 
-/* ==================== 星期 ==================== */
-function renderWd(){
-  var byW={}; VIEW.forEach(function(s){ (byW[s.wd]=byW[s.wd]||[]).push(s); });
-  var W=1000,H=280,pl=56,pr=22,pt=20,pb=44, iw=W-pl-pr, ih=H-pt-pb;
-  var arr=[]; for(var i=0;i<7;i++){ arr.push(byW[i]?agg(byW[i]):null); }
-  var vals=arr.filter(function(a){return a;}).map(function(a){return a.lph||0;});
-  if(!vals.length){ $('#wdChart').innerHTML='<div class="empty">无数据</div>'; return; }
-  var mx=Math.max.apply(null,vals)*1.2||1;
-  var bw=iw/7*0.56;
+/* ==================== 双链路蒸馏 ==================== */
+function renderPivotFunnel(){
+  var o=agg(VIEW);
+  // 头条 6 指标（用户点名重点指标）
+  var cards=[
+    {t:'消耗',          v:'¥'+fmtK(o.cost),                 k:'--c1'},
+    {t:'留资数',        v:fmt(o.leads),                     k:'--c2'},
+    {t:'留资成本(CPL)', v:o.cpl==null?'—':'¥'+fmt(o.cpl,0), k:'--c3'},
+    {t:'小风车点击率',  v:pct(o.ctr,2),                     k:'--c4'},
+    {t:'小风车点击转化率',v:pct(o.cvr,1),                   k:'--c5'},
+    {t:'评论留资转化率',v:pct(o.mvr,1),                     k:'--c6'}
+  ];
+  $('#kpi6').innerHTML=cards.map(function(c){
+    return '<div class="kpi" style="--k:var('+c.k+')"><div class="t">'+c.t+'</div><div class="v">'+c.v+'</div></div>';
+  }).join('');
+
+  if(!o.n){ $('#funnelCost').innerHTML='<div class="empty">无数据</div>'; $('#funnelFlow').innerHTML='<div class="empty">无数据</div>'; return; }
+  var cpl = o.cpl==null?0:o.cpl;
+  var perWan = o.cost? o.leads/o.cost*10000 : 0;
+  // 链路① 成本转化链：消耗 → 留资 → 单线索成本
+  var steps1=[
+    {t:'消耗',       fmt:'¥'+fmtK(o.cost),      c:'var(--c1)'},
+    {t:'留资',       fmt:fmt(o.leads)+' 条',     c:'var(--c2)'},
+    {t:'单线索成本', fmt:'¥'+fmt(cpl,0)+'/条',   c:'var(--c3)'}
+  ];
+  var rates1=[ {a:'每万元产出 '+fmt(perWan,1)+' 条'}, {a:'¥'+fmt(cpl,0)+' / 条'} ];
+  $('#funnelCost').innerHTML=buildFunnel(steps1,rates1);
+  // 链路② 流量转化链：消耗 → 场观/评论 → 小风车点击 → 留资 → 留资成本
+  var steps2=[
+    {t:'消耗',        fmt:'¥'+fmtK(o.cost),                                     c:'var(--c1)'},
+    {t:'场观 / 评论', fmt:fmt(o.views)+(o.comments?(' / '+fmt(o.comments)):''), c:'var(--c6)'},
+    {t:'小风车点击',  fmt:fmt(o.clicks),                                        c:'var(--c4)'},
+    {t:'留资',        fmt:fmt(o.leads)+' 条',                                   c:'var(--c2)'},
+    {t:'留资成本',    fmt:'¥'+fmt(cpl,0)+'/条',                                 c:'var(--c3)'}
+  ];
+  var rates2=[ {a:'—'}, {a:'点击率 '+pct(o.ctr,2)}, {a:'点击转化率 '+pct(o.cvr,1)}, {a:'评论留资率 '+pct(o.mvr,1)} ];
+  $('#funnelFlow').innerHTML=(o.vN||o.mN? '' : '<div class="sub" style="margin-bottom:6px">当前范围无场观/评论数据，链路②部分指标为空</div>')+buildFunnel(steps2,rates2);
+}
+
+// 通用蒸馏漏斗：steps=[{t,fmt,c}], rates=steps.length-1 个转化率标注
+function buildFunnel(steps, rates){
+  var W=1000, padX=130, top=14, bh=46, gap=42, baseW=W-padX*2;
+  var H=top*2 + steps.length*bh + (steps.length-1)*gap;
   var h='';
-  for(var i=0;i<=4;i++){
-    var y=pt+ih*i/4;
-    h+='<line x1="'+pl+'" y1="'+y.toFixed(1)+'" x2="'+(W-pr)+'" y2="'+y.toFixed(1)+'" stroke="var(--line)" stroke-dasharray="3 4"/>';
-    h+='<text x="'+(pl-8)+'" y="'+(y+4).toFixed(1)+'" text-anchor="end" font-size="11" fill="var(--tx3)">'+fmt(mx-mx*i/4,2)+'</text>';
-  }
-  arr.forEach(function(a,i){
-    var cx=pl+iw*(i+0.5)/7;
-    h+='<text x="'+cx.toFixed(1)+'" y="'+(H-22)+'" text-anchor="middle" font-size="12" fill="var(--tx2)">'+WD[i]+'</text>';
-    if(!a){ h+='<text x="'+cx.toFixed(1)+'" y="'+(H-7)+'" text-anchor="middle" font-size="10" fill="var(--tx3)">无</text>'; return; }
-    var v=a.lph||0, bh=(v/mx)*ih;
-    h+='<rect x="'+(cx-bw/2).toFixed(1)+'" y="'+(pt+ih-bh).toFixed(1)+'" width="'+bw.toFixed(1)+'" height="'+Math.max(1,bh).toFixed(1)+'" rx="4" fill="var(--pri)" opacity=".82"><title>'+WD[i]+'\\n小时产量 '+fmt(v,2)+' 条/h\\n'+a.n+' 场\\n单线索成本 ¥'+fmt(a.cpl,0)+'</title></rect>';
-    h+='<text x="'+cx.toFixed(1)+'" y="'+(pt+ih-bh-6).toFixed(1)+'" text-anchor="middle" font-size="11" font-weight="600" fill="var(--tx)">'+fmt(v,2)+'</text>';
-    h+='<text x="'+cx.toFixed(1)+'" y="'+(H-7)+'" text-anchor="middle" font-size="10" fill="var(--tx3)">'+a.n+'场</text>';
-  });
-  $('#wdChart').innerHTML=svgEl('0 0 '+W+' '+H,270)+h+'</svg><div class="lg"><span>纵轴：小时产量（条/h）</span></div>';
-}
-
-/* ==================== 场次属性 ==================== */
-function renderSlot(){
-  var byS={}; VIEW.forEach(function(s){ (byS[s.p]=byS[s.p]||[]).push(s); });
-  var arr=[]; for(var k in byS){ arr.push({name:k,a:agg(byS[k])}); }
-  arr.sort(function(x,y){ return y.a.leads-x.a.leads; });
-  if(!arr.length){ $('#slotChart').innerHTML='<div class="empty">无数据</div>'; return; }
-  var tot=arr.reduce(function(a,b){return a+b.a.leads;},0);
-  var W=1000, lh=44+(arr.length-1)*54+55, H=Math.max(280,lh), cx=250,cy=132,R=104,r0=58;
-  var ang=-Math.PI/2, h='';
-  arr.forEach(function(x,i){
-    var p=tot?x.a.leads/tot:0, a2=ang+p*Math.PI*2, c=PAL[i%PAL.length];
-    if(p>0){
-      var lg=p>0.5?1:0;
-      var x1=cx+R*Math.cos(ang), y1=cy+R*Math.sin(ang), x2=cx+R*Math.cos(a2), y2=cy+R*Math.sin(a2);
-      var x3=cx+r0*Math.cos(a2), y3=cy+r0*Math.sin(a2), x4=cx+r0*Math.cos(ang), y4=cy+r0*Math.sin(ang);
-      h+='<path d="M'+x1.toFixed(1)+' '+y1.toFixed(1)+'A'+R+' '+R+' 0 '+lg+' 1 '+x2.toFixed(1)+' '+y2.toFixed(1)+
-         'L'+x3.toFixed(1)+' '+y3.toFixed(1)+'A'+r0+' '+r0+' 0 '+lg+' 0 '+x4.toFixed(1)+' '+y4.toFixed(1)+'Z" fill="'+c+'" opacity=".88" stroke="var(--panel)" stroke-width="2"><title>'+esc(x.name)+'\\n线索 '+fmt(x.a.leads)+'（'+pct(p)+'）\\n'+x.a.n+' 场</title></path>';
+  steps.forEach(function(s,i){
+    var y=top + i*(bh+gap);
+    var w=baseW*(1 - i*0.12);
+    var x=(W-w)/2;
+    h+='<text x="14" y="'+(y+bh/2+5)+'" font-size="13" font-weight="700" fill="var(--tx)">'+s.t+'</text>';
+    h+='<rect x="'+x.toFixed(1)+'" y="'+y+'" width="'+w.toFixed(1)+'" height="'+bh+'" rx="7" fill="'+s.c+'" opacity=".9"/>';
+    h+='<text x="'+(x+w/2).toFixed(1)+'" y="'+(y+bh/2+5).toFixed(1)+'" text-anchor="middle" font-size="15.5" font-weight="700" fill="#fff">'+s.fmt+'</text>';
+    if(i<steps.length-1){
+      var ry=y+bh+gap/2;
+      h+='<text x="'+(W/2).toFixed(1)+'" y="'+(ry+5).toFixed(1)+'" text-anchor="middle" font-size="12.5" font-weight="700" fill="var(--pri)">'+esc(rates[i].a)+'</text>';
+      h+='<path d="M'+(W/2-5)+' '+(y+bh+9)+' L'+(W/2+5)+' '+(y+bh+9)+' L'+(W/2)+' '+(y+bh+21)+' Z" fill="var(--tx3)"/>';
     }
-    ang=a2;
-    var ly=44+i*54;
-    h+='<rect x="410" y="'+ly+'" width="11" height="11" rx="2.5" fill="'+c+'"/>';
-    h+='<text x="430" y="'+(ly+10)+'" font-size="13" font-weight="600" fill="var(--tx)">'+esc(x.name)+'</text>';
-    h+='<text x="430" y="'+(ly+28)+'" font-size="11.5" fill="var(--tx2)">'+fmt(x.a.leads)+' 条（'+pct(p)+'）· '+x.a.n+' 场 · ¥'+fmt(x.a.cpl,0)+'/条</text>';
-    h+='<text x="430" y="'+(ly+43)+'" font-size="11" fill="var(--tx3)">小时产量 '+fmt(x.a.lph,2)+' 条/h</text>';
   });
-  h+='<text x="'+cx+'" y="'+(cy-6)+'" text-anchor="middle" font-size="12" fill="var(--tx3)">总线索</text>';
-  h+='<text x="'+cx+'" y="'+(cy+18)+'" text-anchor="middle" font-size="23" font-weight="700" fill="var(--tx)">'+fmt(tot)+'</text>';
-  $('#slotChart').innerHTML=svgEl('0 0 '+W+' '+H,Math.min(H,420))+h+'</svg>';
+  return svgEl('0 0 '+W+' '+H, Math.min(H,380))+h+'</svg>';
 }
 
-/* ==================== 月度表 ==================== */
-function renderMonth(){
-  var byM={}; VIEW.forEach(function(s){ (byM[s.ym]=byM[s.ym]||[]).push(s); });
-  var ms=Object.keys(byM).sort().reverse();
-  var h='<thead><tr><th>月份</th><th class="tr">场次</th><th class="tr">计费小时</th><th class="tr">消耗</th><th class="tr">线索量</th><th class="tr">单线索成本</th><th class="tr">小时产量</th><th class="tr">小时消耗</th><th class="tr">点击率</th><th class="tr">留资转化</th></tr></thead><tbody>';
-  ms.forEach(function(m){
-    var a=agg(byM[m]);
-    h+='<tr><td><b>'+m+'</b></td><td class="tr num">'+fmt(a.n)+'</td><td class="tr num">'+fmt(a.billH,1)+'</td>'+
-       '<td class="tr num">¥'+fmtK(a.cost)+'</td><td class="tr num"><b>'+fmt(a.leads)+'</b></td>'+
-       '<td class="tr num">'+(a.cpl==null?'—':'¥'+fmt(a.cpl,0))+'</td><td class="tr num">'+fmt(a.lph,2)+'</td>'+
-       '<td class="tr num">¥'+fmt(a.cph,0)+'</td><td class="tr num">'+pct(a.ctr,2)+'</td><td class="tr num">'+pct(a.cvr,1)+'</td></tr>';
+/* ==================== 主播规律矩阵（星期 / 场次 × 主播） ==================== */
+function renderMatrix(){
+  var cols = state.pivotDim==='p' ? BUCKETS : WD;
+  var byA={}; VIEW.forEach(function(s){ (byA[s.a]=byA[s.a]||[]).push(s); });
+  var names=Object.keys(byA).sort(function(x,y){ return agg(byA[y]).leads-agg(byA[x]).leads; }).slice(0,12);
+  if(!names.length){ $('#matrixChart').innerHTML='<div class="empty">数据不足</div>'; return; }
+  var dimVal=function(s){ return state.pivotDim==='p' ? s.p : s.wd; };
+  // 每列极值（按留资量）用于颜色
+  var colMin={}, colMax={};
+  cols.forEach(function(c){ var mx=0,mn=Infinity; names.forEach(function(n){
+    var sub=byA[n].filter(function(s){ return dimVal(s)===c; }); if(!sub.length) return;
+    var v=agg(sub).leads; if(v>mx)mx=v; if(v<mn)mn=v;
+  }); colMax[c]=mx; colMin[c]=mn===Infinity?0:mn; });
+  function heat(c,v){
+    var mn=colMin[c], mx=colMax[c]; if(mx<=0) return 'var(--panel2)';
+    var t=mx===mn?0.5:(v-mn)/(mx-mn), r,g,b;
+    if(t<0.5){ var k=t*2; r=224+(245-224)*k; g=45+(158-45)*k; b=60+(11-60)*k; }
+    else { var k2=(t-0.5)*2; r=245+(14-245)*k2; g=158+(159-158)*k2; b=11+(110-11)*k2; }
+    return 'rgb('+Math.round(r)+','+Math.round(g)+','+Math.round(b)+')';
+  }
+  var h='<thead><tr><th class="rh-h"></th>'+cols.map(function(c){ return '<th>'+esc(c)+'</th>'; }).join('')+'</tr></thead><tbody>';
+  names.forEach(function(n){
+    var fcls = state.focus===n ? ' focus' : '';
+    var op = (!state.focus || state.focus===n) ? '' : ' style="opacity:.32"';
+    h+='<tr class="mtx-r'+fcls+'" data-name="'+esc(n)+'"'+op+'>';
+    h+='<td class="rh" onclick="setFocus(\''+encodeURIComponent(n)+'\')" style="cursor:pointer" title="点击聚焦 '+esc(n)+'">'+esc(n)+'</td>';
+    cols.forEach(function(c){
+      var sub=byA[n].filter(function(s){ return dimVal(s)===c; });
+      if(!sub.length){ h+='<td><div class="mtc" style="background:var(--panel2);color:var(--tx3)">—</div></td>'; return; }
+      var a=agg(sub);
+      h+='<td onclick="setFocus(\''+encodeURIComponent(n)+'\')" style="cursor:pointer"><div class="mtc" style="background:'+heat(c,a.leads)+'" title="'+esc(n)+' · '+esc(c)+'　留资 '+fmt(a.leads)+' 条　小时产量 '+fmt(a.lph,2)+' 条/h　单线索成本 ¥'+fmt(a.cpl,0)+'">'+fmt(a.leads)+'</div></td>';
+    });
+    h+='</tr>';
   });
-  var t=agg(VIEW);
-  h+='</tbody><tfoot><tr style="background:var(--panel2);font-weight:700"><td>合计</td><td class="tr num">'+fmt(t.n)+'</td>'+
-     '<td class="tr num">'+fmt(t.billH,1)+'</td><td class="tr num">¥'+fmtK(t.cost)+'</td><td class="tr num">'+fmt(t.leads)+'</td>'+
-     '<td class="tr num">'+(t.cpl==null?'—':'¥'+fmt(t.cpl,0))+'</td><td class="tr num">'+fmt(t.lph,2)+'</td>'+
-     '<td class="tr num">¥'+fmt(t.cph,0)+'</td><td class="tr num">'+pct(t.ctr,2)+'</td><td class="tr num">'+pct(t.cvr,1)+'</td></tr></tfoot>';
-  $('#monthTable').innerHTML=h;
+  h+='</tbody>';
+  $('#matrixChart').innerHTML=h;
 }
+
+/* ==================== 月度趋势（多线归一化） ==================== */
+function renderMonthTrend(){
+  var byM={}; VIEW.forEach(function(s){ (byM[s.ym]=byM[s.ym]||[]).push(s); });
+  var ms=Object.keys(byM).sort();
+  if(ms.length<2){ $('#monthTrend').innerHTML='<div class="empty">仅 '+ms.length+' 个月，无法绘制趋势</div>'; return; }
+  var series={
+    cost:  ms.map(function(m){ return agg(byM[m]).cost; }),
+    leads: ms.map(function(m){ return agg(byM[m]).leads; }),
+    cpl:   ms.map(function(m){ return agg(byM[m]).cpl; })
+  };
+  var defs=[
+    {k:'cost',  t:'消耗',       c:'var(--c1)', last:fmtK(series.cost[ms.length-1])},
+    {k:'leads', t:'留资数',     c:'var(--c2)', last:fmt(series.leads[ms.length-1])},
+    {k:'cpl',   t:'单线索成本', c:'var(--c3)', last:series.cpl[ms.length-1]==null?'—':'¥'+fmt(series.cpl[ms.length-1],0)}
+  ];
+  function norm(arr){ var v=arr.filter(function(x){return x!=null;}); if(!v.length) return arr;
+    var mn=Math.min.apply(null,v), mx=Math.max.apply(null,v);
+    return arr.map(function(x){ return x==null?null:(mx===mn?0.5:(x-mn)/(mx-mn)); }); }
+  var nCost=norm(series.cost), nLeads=norm(series.leads), nCpl=norm(series.cpl);
+  var W=1000,H=280,pl=44,pr=18,pt=18,pb=40, iw=W-pl-pr, ih=H-pt-pb;
+  var X=function(i){ return pl+(ms.length<2?iw/2:i*iw/(ms.length-1)); };
+  var Y=function(t){ return pt+ih-(t)*ih; };
+  var g='';
+  for(var i=0;i<=4;i++){ var y=pt+ih*i/4; g+='<line x1="'+pl+'" y1="'+y.toFixed(1)+'" x2="'+(W-pr)+'" y2="'+y.toFixed(1)+'" stroke="var(--line)" stroke-dasharray="3 4"/>'; }
+  function linePath(ns){ var segs=[],cur=[]; ns.forEach(function(v,i){ if(v==null){ if(cur.length)segs.push(cur); cur=[]; } else cur.push([X(i),Y(v)]); }); if(cur.length)segs.push(cur);
+    return segs.map(function(sg){ return 'M'+sg.map(function(p){return p[0].toFixed(1)+' '+p[1].toFixed(1);}).join('L'); }).join(' '); }
+  var paths='';
+  paths+='<path d="'+linePath(nCost)+'" fill="none" stroke="var(--c1)" stroke-width="2.4" stroke-linejoin="round"/>';
+  paths+='<path d="'+linePath(nLeads)+'" fill="none" stroke="var(--c2)" stroke-width="2.4" stroke-linejoin="round"/>';
+  paths+='<path d="'+linePath(nCpl)+'" fill="none" stroke="var(--c3)" stroke-width="2.4" stroke-dasharray="5 4" stroke-linejoin="round"/>';
+  var dots='', colMap={cost:'var(--c1)',leads:'var(--c2)',cpl:'var(--c3)'};
+  ms.forEach(function(m,i){
+    [['cost',series.cost[i],nCost[i],'¥'+fmtK(series.cost[i])],
+     ['leads',series.leads[i],nLeads[i],fmt(series.leads[i])],
+     ['cpl',series.cpl[i],nCpl[i],(series.cpl[i]==null?'—':'¥'+fmt(series.cpl[i],0))]].forEach(function(p){
+      if(p[2]==null) return;
+      dots+='<circle cx="'+X(i).toFixed(1)+'" cy="'+Y(p[2]).toFixed(1)+'" r="2.6" fill="'+colMap[p[0]]+'" stroke="var(--panel)" stroke-width="1.5"><title>'+m+' '+p[0]+'：'+p[3]+'</title></circle>';
+    });
+  });
+  var lb='', ls=Math.max(1,Math.ceil(ms.length/9));
+  ms.forEach(function(m,i){ if(i%ls && i!==ms.length-1) return; lb+='<text x="'+X(i).toFixed(1)+'" y="'+(H-14)+'" text-anchor="middle" font-size="11" fill="var(--tx3)">'+m.slice(2)+'</text>'; });
+  var lg=defs.map(function(d){ return '<span><i style="background:'+d.c+'"></i>'+d.t+' <b>'+d.last+'</b></span>'; }).join('');
+  $('#monthTrend').innerHTML=svgEl('0 0 '+W+' '+H,300)+g+paths+dots+lb+
+    '<text x="'+(W-pr)+'" y="'+(H-2)+'" text-anchor="end" font-size="10" fill="var(--tx3)">各指标按自身区间归一化（看趋势关联）</text></svg>'+
+    '<div class="lg">'+lg+'</div>';
+}
+
+/* ==================== 月度 × 主播 热力网格（可切指标） ==================== */
+function renderMonthGrid(){
+  var byM={}; VIEW.forEach(function(s){ (byM[s.ym]=byM[s.ym]||[]).push(s); });
+  var ms=Object.keys(byM).sort();
+  var byA={}; VIEW.forEach(function(s){ (byA[s.a]=byA[s.a]||[]).push(s); });
+  var names=Object.keys(byA).sort(function(x,y){ return agg(byA[y]).leads-agg(byA[x]).leads; }).slice(0,12);
+  if(!ms.length||!names.length){ $('#monthGrid').innerHTML='<div class="empty">数据不足</div>'; return; }
+  var M={
+    leads:{t:'线索量',     f:function(a){return a.leads;}, fmt:function(v){return fmt(v);},       rev:false},
+    cpl:  {t:'单线索成本', f:function(a){return a.cpl;},   fmt:function(v){return '¥'+fmt(v,0);}, rev:true},
+    ctr:  {t:'小风车点击率',f:function(a){return a.ctr;},  fmt:function(v){return pct(v,1);},     rev:false}
+  };
+  var m=M[state.monthMetric];
+  var cells={}, all=[];
+  names.forEach(function(n){ cells[n]={}; ms.forEach(function(mo){
+    var sub=byM[mo].filter(function(s){ return s.a===n; }); if(!sub.length) return;
+    var v=m.f(agg(sub)); if(v!=null){ cells[n][mo]={v:v}; all.push(v); }
+  }); });
+  if(!all.length){ $('#monthGrid').innerHTML='<div class="empty">该指标无有效数据</div>'; return; }
+  var mn=Math.min.apply(null,all), mx=Math.max.apply(null,all);
+  function heat(v){ if(mx===mn) return 'var(--c2)'; var t=(v-mn)/(mx-mn); if(m.rev) t=1-t;
+    var r,g,b; if(t<0.5){ var k=t*2; r=224+(245-224)*k; g=45+(158-45)*k; b=60+(11-60)*k; }
+    else { var k2=(t-0.5)*2; r=245+(14-245)*k2; g=158+(159-158)*k2; b=11+(110-11)*k2; }
+    return 'rgb('+Math.round(r)+','+Math.round(g)+','+Math.round(b)+')'; }
+  var h='<thead><tr><th class="rh-h">月份 \ 主播</th>'+names.map(function(n){ return '<th>'+esc(n)+'</th>'; }).join('')+'</tr></thead><tbody>';
+  ms.forEach(function(mo){
+    h+='<tr><td class="rh">'+mo.slice(2)+'</td>';
+    names.forEach(function(n){
+      var c=cells[n][mo];
+      if(!c){ h+='<td><div class="mtc" style="background:var(--panel2);color:var(--tx3)">—</div></td>'; return; }
+      h+='<td data-name="'+esc(n)+'" style="cursor:pointer"><div class="mtc" style="background:'+heat(c.v)+'" title="'+mo+' · '+esc(n)+'　'+m.t+'：'+m.fmt(c.v)+'">'+m.fmt(c.v)+'</div></td>';
+    });
+    h+='</tr>';
+  });
+  h+='</tbody>';
+  $('#monthGrid').innerHTML=h;
+}
+
 
 /* ==================== 明细表 ==================== */
 var COLS=[
@@ -1236,7 +1385,7 @@ function renderAll(){
   $$('#quickRange .chip').forEach(function(c){ c.classList.remove('on'); });
   renderKPI(); renderAlerts(); renderDigest(); renderTrend(); renderShare(); renderFunnel();
   renderScatter(); renderAnchorCards();
-  renderHeat(); renderWd(); renderSlot(); renderMonth();
+  renderPivotFunnel(); renderMatrix(); renderMonthTrend(); renderMonthGrid(); renderHeat();
   renderDetail(); renderCross(); updateFocusBar();
 }
 
@@ -1281,6 +1430,27 @@ function initUI(){
     var tr=td.parentNode; if(!tr||!tr.querySelector) return;
     var rh=tr.querySelector('.rh'); if(!rh) return;
     setFocus(encodeURIComponent(rh.textContent.trim()));
+  });
+  // 主播规律矩阵：维度切换（星期 / 场次）
+  var MD=[['wd','星期'],['p','场次']];
+  $('#matrixDim').innerHTML=MD.map(function(x){ return '<button class="chip'+(x[0]===state.pivotDim?' on':'')+'" data-k="'+x[0]+'">'+x[1]+'</button>'; }).join('');
+  $$('#matrixDim .chip').forEach(function(b){ b.onclick=function(){ $$('#matrixDim .chip').forEach(function(x){x.classList.remove('on');}); b.classList.add('on'); state.pivotDim=b.dataset.k; renderMatrix(); }; });
+  // 月度网格：指标切换（线索量 / 单线索成本 / 小风车点击率）
+  var MM=[['leads','线索量'],['cpl','单线索成本'],['ctr','小风车点击率']];
+  $('#monthMetric').innerHTML=MM.map(function(x){ return '<button class="chip'+(x[0]===state.monthMetric?' on':'')+'" data-k="'+x[0]+'">'+x[1]+'</button>'; }).join('');
+  $$('#monthMetric .chip').forEach(function(b){ b.onclick=function(){ $$('#monthMetric .chip').forEach(function(x){x.classList.remove('on');}); b.classList.add('on'); state.monthMetric=b.dataset.k; renderMonthGrid(); }; });
+  // 矩阵 / 月度网格 点击聚焦（事件委托）
+  var mc=document.getElementById('matrixChart');
+  if(mc) mc.addEventListener('click', function(e){
+    var tr=e.target.closest('tr'); if(!tr) return;
+    var nm=tr.dataset.name; if(!nm) return;
+    setFocus(encodeURIComponent(nm));
+  });
+  var mg=document.getElementById('monthGrid');
+  if(mg) mg.addEventListener('click', function(e){
+    var td=e.target.closest('td'); if(!td) return;
+    var nm=td.dataset.name; if(!nm) return;
+    setFocus(encodeURIComponent(nm));
   });
   // Tab
   $$('.tab').forEach(function(t){
