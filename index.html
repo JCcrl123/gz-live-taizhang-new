@@ -175,8 +175,8 @@ tbody tr:hover{background:var(--panel2)}
 
 svg text{font-family:inherit;font-variant-numeric:tabular-nums}
 
-@media(max-width:1200px){.kpis{grid-template-columns:repeat(3,1fr)}.grid3{grid-template-columns:1fr}}
-@media(max-width:900px){.grid2{grid-template-columns:1fr}}
+@media(max-width:1200px){.kpis{grid-template-columns:repeat(4,1fr)}.grid3{grid-template-columns:1fr}}
+@media(max-width:900px){.kpis{grid-template-columns:repeat(3,1fr)}.grid2{grid-template-columns:1fr}}
 @media(max-width:768px){
   .wrap{padding:0 11px 30px}
   .hd{padding:9px 11px;gap:9px}
@@ -197,6 +197,27 @@ svg text{font-family:inherit;font-variant-numeric:tabular-nums}
   td,th{padding:8px 9px}
 }
 
+
+/* ===== 交叉对比 / 全局联动 增强 ===== */
+.focus-bar{display:inline-flex;align-items:center;gap:7px;background:var(--pri);color:#fff;padding:6px 8px 6px 12px;border-radius:20px;font-size:12.5px;font-weight:600}
+.focus-bar .fb-n{font-weight:700}
+.focus-bar .fb-x{border:0;background:rgba(255,255,255,.25);color:#fff;border-radius:14px;padding:3px 10px;cursor:pointer;font-size:12px;font-weight:600}
+.focus-bar .fb-x:hover{background:rgba(255,255,255,.42)}
+.ac.focus{outline:2px solid var(--pri);outline-offset:2px;box-shadow:0 0 0 3px rgba(37,99,235,.16)}
+.ac-foc{position:absolute;top:10px;right:10px;width:26px;height:26px;border-radius:50%;border:1px solid var(--line);background:var(--panel2);color:var(--tx2);cursor:pointer;font-size:14px;line-height:1;display:flex;align-items:center;justify-content:center;z-index:2}
+.ac-foc:hover{color:var(--pri);border-color:var(--pri)}
+.ac-foc.on{background:var(--pri);color:#fff;border-color:var(--pri)}
+.heat td{cursor:pointer}
+.heat td:hover .hc{filter:brightness(1.08);outline:1px solid var(--tx3)}
+.ch-h{font-size:12.5px;font-weight:600;color:var(--tx2);margin:0 0 8px;padding-bottom:6px;border-bottom:1px solid var(--line2)}
+.cmp-row{display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid var(--line2);font-size:13px}
+.cmp-row:last-child{border-bottom:0}
+.cmp-row .cmp-k{color:var(--tx3);min-width:92px}
+.cmp-row b{flex:1}
+.cmp-row .num{font-weight:700}
+table.ctab tr.hl td{background:var(--panel2)}
+.kpi .spark-w{margin-top:8px}
+.kpi .spark{color:var(--k);display:block}
 </style>
 
 <script>window.REMOTE_DATA_URL="data.json";window.SYNC_INTERVAL_MS=15*60*1000;</script>
@@ -277,6 +298,7 @@ window.__PRELOADED__={"meta": {"source": "飞书多维表格 · 迈科代理直�
     <div class="fg"><label>主播</label><select id="fAnchor"><option value="">全部</option></select></div>
     <div class="fg"><label>时段</label><select id="fSlot"><option value="">全部</option></select></div>
     <div class="sp" style="flex:1"></div>
+    <div id="focusBar" class="focus-bar" style="display:none"><span class="fb-l">聚焦：</span><b class="fb-n"></b><button class="fb-x" onclick="clearFocus()">取消</button></div>
     <button class="btn" onclick="resetFilters()">重置</button>
   </div>
 
@@ -285,6 +307,7 @@ window.__PRELOADED__={"meta": {"source": "飞书多维表格 · 迈科代理直�
     <button class="tab" data-p="anchor">主播分析</button>
     <button class="tab" data-p="pivot">多维透视</button>
     <button class="tab" data-p="detail">明细数据</button>
+    <button class="tab" data-p="cross">交叉对比</button>
   </div>
 
   <!-- 全局概览 -->
@@ -347,6 +370,23 @@ window.__PRELOADED__={"meta": {"source": "飞书多维表格 · 迈科代理直�
       <div class="card-b" style="padding:0"><div class="tw" style="max-height:72vh"><table id="detailTable"></table></div></div>
     </div>
   </div>
+
+  <!-- 交叉对比 -->
+  <div class="page" id="p-cross">
+    <div class="card">
+      <div class="card-h"><h3>交叉对比</h3><span class="sub">选维度 × 指标，跨对象对比而非单点呈现</span><div class="sp"></div>
+        <div class="chips" id="crossDim"></div>
+        <div class="chips" id="crossMetric"></div>
+      </div>
+      <div class="card-b">
+        <div id="crossChart"></div>
+        <div class="grid2" style="margin-top:14px">
+          <div><div class="ch-h">维度明细</div><div id="crossTable"></div></div>
+          <div><div class="ch-h">对比团队均值</div><div id="crossCmp"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <div class="mask" id="mask" onclick="closeDrawer()"></div>
@@ -370,7 +410,7 @@ var PAL = ['#2563eb','#0e9f6e','#f59e0b','#8b5cf6','#ec4899','#06b6d4','#ef4444'
 var BUCKETS = ['早间 06-10','午间 10-14','下午 14-18','晚间 18-22','深夜 22-06'];
 var WD = ['周一','周二','周三','周四','周五','周六','周日'];
 var DATA = null, SESS = [], VIEW = [];
-var state = { d1:'', d2:'', anchor:'', slot:'', trend:'leads', pivot:'lph', sortKey:'date', sortDesc:true };
+var state = { d1:'', d2:'', anchor:'', slot:'', trend:'leads', pivot:'lph', sortKey:'date', sortDesc:true, focus:'', crossDim:'anchor', crossMetric:'leads' };
 
 /* ==================== 工具 ==================== */
 function $(s){ return document.querySelector(s); }
@@ -382,6 +422,15 @@ function pct(n,d){ if(n==null||isNaN(n))return '—'; return (n*100).toFixed(d==
 function div(a,b){ return (b&&b>0&&a!=null)?a/b:null; }
 function toast(m){ var t=$('#toast'); t.textContent=m; t.classList.add('on'); clearTimeout(t._t); t._t=setTimeout(function(){t.classList.remove('on');},2200); }
 function colorOf(name){ var h=0; for(var i=0;i<name.length;i++) h=(h*31+name.charCodeAt(i))>>>0; return PAL[h%PAL.length]; }
+function spark(series){
+  var pts=[]; for(var i=0;i<series.length;i++){ if(series[i]!=null) pts.push(series[i]); }
+  if(pts.length<2) return '';
+  var mn=Math.min.apply(null,pts), mx=Math.max.apply(null,pts), rng=(mx-mn)||1;
+  var W=76,H=22,n=series.length, step=n>1?W/(n-1):0, d='';
+  for(var i=0;i<series.length;i++){ var v=series[i]; var x=i*step; var y= v==null? H/2 : H-2-((v-mn)/rng)*(H-4); d+=(i?'L':'M')+x.toFixed(1)+' '+y.toFixed(1); }
+  var ly = series[n-1]==null? H/2 : H-2-((series[n-1]-mn)/rng)*(H-4);
+  return '<svg class="spark" viewBox="0 0 '+W+' '+H+'" width="'+W+'" height="'+H+'" preserveAspectRatio="none"><path d="'+d+'" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><circle cx="'+W+'" cy="'+ly.toFixed(1)+'" r="2" fill="currentColor"/></svg>';
+}
 function svgEl(vb,h){ return '<svg viewBox="'+vb+'" style="width:100%;height:'+h+'px;display:block" preserveAspectRatio="xMidYMid meet">'; }
 
 
@@ -467,6 +516,9 @@ var KPI_DEF = [
 ];
 function renderKPI(){
   var cur=agg(VIEW), pre=agg(prevPeriod());
+  var byD={}; VIEW.forEach(function(s){ (byD[s.d]=byD[s.d]||[]).push(s); });
+  var dkeys=Object.keys(byD).sort();
+  var daily=dkeys.map(function(k){ return agg(byD[k]); });
   var h='';
   for(var i=0;i<KPI_DEF.length;i++){
     var d=KPI_DEF[i], a=cur[d.k], b=pre[d.k], delta='';
@@ -480,7 +532,9 @@ function renderKPI(){
     } else {
       delta='<div class="d">上期无数据</div>';
     }
-    h+='<div class="kpi" style="--k:var('+d.c+')"><div class="t">'+d.t+'</div><div class="v num">'+d.f(cur)+'</div>'+delta+'</div>';
+    var sers=daily.map(function(a){ return a[d.k]; });
+    var sp=spark(sers);
+    h+='<div class="kpi" style="--k:var('+d.c+')"><div class="t">'+d.t+'</div><div class="v num">'+d.f(cur)+'</div>'+delta+(sp?'<div class="spark-w">'+sp+'</div>':'')+'</div>';
   }
   $('#kpis').innerHTML=h;
 }
@@ -541,7 +595,7 @@ function renderDigest(){
   var bestLph =arr.filter(function(x){return x.a.lph!=null;}).sort(function(x,y){ return y.a.lph-x.a.lph; })[0];
   var bestCpl =arr.filter(function(x){return x.a.cpl!=null;}).sort(function(x,y){ return x.a.cpl-y.a.cpl; })[0];
 
-  var byB={}; VIEW.forEach(function(s){ (byB[s.u]=byB[s.u]||[]).push(s); });
+  var byB={}; VIEW.forEach(function(s){ (byB[s.bucket]=byB[s.bucket]||[]).push(s); });
   var bArr=[]; for(var b in byB){ var ba=agg(byB[b]); if(ba.n>=3) bArr.push({name:b,a:ba}); }
   var bestB=bArr.filter(function(x){return x.a.lph!=null;}).sort(function(x,y){ return y.a.lph-x.a.lph; })[0];
 
@@ -666,7 +720,7 @@ function renderShare(){
     h+='<rect x="105" y="'+(y+19)+'" width="'+wl.toFixed(1)+'" height="14" rx="3" fill="'+c+'" opacity=".42"><title>线索 '+fmt(r.leads)+'（'+pct(div(r.leads,tl))+'）</title></rect>';
     h+='<text x="'+(105+wl+7)+'" y="'+(y+30)+'" font-size="10.5" fill="var(--tx2)">'+fmt(r.leads)+' 条</text>';
   });
-  $('#shareChart').innerHTML = svgEl('0 0 '+W+' '+H, Math.min(H*0.42,420))+h+'</svg>'+
+  $('#shareChart').innerHTML = svgEl('0 0 '+W+' '+H, Math.min(H,460))+h+'</svg>'+
     '<div class="lg"><span><i style="background:var(--tx3);opacity:.82"></i>上：消耗</span><span><i style="background:var(--tx3);opacity:.42"></i>下：线索量</span></div>';
 }
 
@@ -725,10 +779,15 @@ function renderScatter(){
   var pts='';
   arr.sort(function(a,b){ return b.a.cost-a.a.cost; });
   arr.forEach(function(r){
+    var on = !state.focus || state.focus===r.name;
     var cx=X(r.a.lph), cy=Y(r.a.cpl), rr=9+Math.sqrt(r.a.cost/mc)*17, c=colorOf(r.name);
+    var en=encodeURIComponent(r.name);
+    pts+='<g onclick="setFocus(\''+en+'\')" style="cursor:pointer;opacity:'+(on?1:0.2)+'">';
     pts+='<circle cx="'+cx.toFixed(1)+'" cy="'+cy.toFixed(1)+'" r="'+rr.toFixed(1)+'" fill="'+c+'" opacity=".26"/>';
     pts+='<circle cx="'+cx.toFixed(1)+'" cy="'+cy.toFixed(1)+'" r="4.5" fill="'+c+'"><title>'+esc(r.name)+'\\n小时产量 '+fmt(r.a.lph,2)+' 条/h\\n单线索成本 ¥'+fmt(r.a.cpl,0)+'\\n消耗 ¥'+fmtK(r.a.cost)+'\\n'+r.a.n+' 场</title></circle>';
     pts+='<text x="'+cx.toFixed(1)+'" y="'+(cy-rr-5).toFixed(1)+'" text-anchor="middle" font-size="11.5" font-weight="600" fill="var(--tx)">'+esc(r.name)+'</text>';
+    if(state.focus===r.name){ pts+='<circle cx="'+cx.toFixed(1)+'" cy="'+cy.toFixed(1)+'" r="'+(rr+5).toFixed(1)+'" fill="none" stroke="'+c+'" stroke-width="2.5"/>'; }
+    pts+='</g>';
   });
   $('#scatterChart').innerHTML = svgEl('0 0 '+W+' '+H,370)+g+pts+
     '<text x="'+(W-pr)+'" y="'+(H-4)+'" text-anchor="end" font-size="10.5" fill="var(--tx3)">← 左上象限：高成本低产能（需优化）　右下象限：高产能低成本（标杆）</text></svg>';
@@ -764,7 +823,9 @@ function renderAnchorCards(){
       prog='<div class="prog"><div class="prog-t"><span>'+ym+' 月度目标</span><span class="num" style="font-weight:700;color:'+pc+'">'+fmt(mLeads)+' / '+fmt(t)+'　'+p.toFixed(0)+'%</span></div>'+
            '<div class="prog-b"><div class="prog-f" style="width:'+p+'%;background:'+pc+'"></div></div></div>';
     }
-    return '<div class="ac" onclick="openAnchor(&#39;'+encodeURIComponent(r.name)+'&#39;)">'+rank+
+    var fcls = state.focus===r.name ? ' focus':'';
+    var focBtn = '<button class="ac-foc'+(state.focus===r.name?' on':'')+'" title="聚焦 / 取消聚焦" onclick="event.stopPropagation();setFocus(&#39;'+encodeURIComponent(r.name)+'&#39;)">◎</button>';
+    return '<div class="ac'+fcls+'" onclick="openAnchor(&#39;'+encodeURIComponent(r.name)+'&#39;)">'+focBtn+rank+
       '<div class="ac-h"><div class="av" style="background:'+c+'">'+esc(r.name.slice(0,1))+'</div>'+
       '<div><div class="ac-n">'+esc(r.name)+'</div><div class="ac-t">'+esc(r.list[0].atype)+' · '+a.n+' 场 · '+fmt(a.billH,1)+'h</div></div></div>'+
       '<div class="ac-g">'+
@@ -776,6 +837,93 @@ function renderAnchorCards(){
         '<div class="ac-i"><div class="l">场均留资</div><div class="v num">'+fmt(a.lps,1)+'</div></div>'+
       '</div>'+prog+'</div>';
   }).join('');
+}
+
+/* ==================== 全局聚焦联动 ==================== */
+function setFocus(enc){
+  var name=decodeURIComponent(enc);
+  state.focus = (state.focus===name) ? '' : name;
+  renderScatter(); renderAnchorCards(); renderHeat(); renderCross(); updateFocusBar();
+}
+function clearFocus(){ state.focus=''; renderScatter(); renderAnchorCards(); renderHeat(); renderCross(); updateFocusBar(); }
+function updateFocusBar(){
+  var el=document.getElementById('focusBar'); if(!el) return;
+  if(state.focus){ el.style.display='inline-flex'; el.querySelector('.fb-n').textContent=state.focus; }
+  else el.style.display='none';
+}
+
+/* ==================== 交叉对比 ==================== */
+var CROSS_DIM=[
+  {k:'anchor',t:'主播'},
+  {k:'bucket',t:'时段'},
+  {k:'wd',t:'星期'},
+  {k:'ym',t:'月份'},
+  {k:'atype',t:'主播类型'}
+];
+var CROSS_M=[
+  {k:'leads',t:'线索量',f:function(o){return o.leads;},fmt:function(v){return fmt(v);},rev:false},
+  {k:'cost',t:'消耗',f:function(o){return o.cost;},fmt:function(v){return '¥'+fmtK(v);},rev:true},
+  {k:'cpl',t:'单线索成本',f:function(o){return o.cpl;},fmt:function(v){return v==null?'—':'¥'+fmt(v,0);},rev:true},
+  {k:'lph',t:'小时产量',f:function(o){return o.lph;},fmt:function(v){return v==null?'—':fmt(v,2);},rev:false},
+  {k:'ctr',t:'小风车点击率',f:function(o){return o.ctr;},fmt:function(v){return v==null?'—':pct(v,2);},rev:false}
+];
+function crossField(s, dim){
+  if(dim==='anchor') return s.a;
+  if(dim==='bucket') return s.bucket;
+  if(dim==='wd') return WD[s.wd];
+  if(dim==='ym') return s.ym;
+  if(dim==='atype') return s.atype;
+  return s.a;
+}
+function renderCross(){
+  var dim=state.crossDim, mk=state.crossMetric;
+  var m=CROSS_M.filter(function(x){return x.k===mk;})[0];
+  if(!m){ $('#crossChart').innerHTML=''; return; }
+  var byD={}; VIEW.forEach(function(s){ var k=crossField(s,dim); (byD[k]=byD[k]||[]).push(s); });
+  var arr=[]; for(var k in byD){ var a=agg(byD[k]); if(a.n>0) arr.push({name:k,a:a}); }
+  if(!arr.length){ $('#crossChart').innerHTML='<div class="empty">当前范围无有效数据</div>'; $('#crossTable').innerHTML=''; $('#crossCmp').innerHTML=''; return; }
+  if(dim==='wd'){ arr.sort(function(x,y){ return WD.indexOf(x.name)-WD.indexOf(y.name); }); }
+  else if(dim==='ym'){ arr.sort(function(x,y){ return x.name<y.name?1:-1; }); }
+  else { arr.sort(function(x,y){ return (m.f(y.a)||0)-(m.f(x.a)||0); }); }
+  var W=1000, H=Math.max(220, arr.length*44+24), pl=118, pr=150, pt=14, pb=14, iw=W-pl-pr;
+  var bh=Math.min(30,(H-pt-pb)/arr.length-8);
+  var vals=arr.map(function(r){return m.f(r.a)||0;});
+  var mx=Math.max.apply(null,vals)||1;
+  var team=agg(VIEW), tv=m.f(team);
+  var h='';
+  arr.forEach(function(r,i){
+    var y=pt+i*((H-pt-pb)/arr.length)+((H-pt-pb)/arr.length-bh)/2;
+    var v=m.f(r.a)||0, w=mx? v/mx*iw:0, c=colorOf(r.name);
+    var on = !state.focus || state.focus===r.name;
+    h+='<g'+(dim==='anchor'?' onclick="setFocus(\''+encodeURIComponent(r.name)+'\')" style="cursor:pointer"':'')+' opacity="'+(on?1:0.25)+'">';
+    h+='<text x="'+(pl-8)+'" y="'+(y+bh/2+4).toFixed(1)+'" text-anchor="end" font-size="12.5" font-weight="600" fill="var(--tx)">'+esc(r.name)+'</text>';
+    h+='<rect x="'+pl+'" y="'+y.toFixed(1)+'" width="'+w.toFixed(1)+'" height="'+bh.toFixed(1)+'" rx="4" fill="'+c+'" opacity=".85"><title>'+esc(r.name)+' · '+m.t+'：'+m.fmt(v)+' · '+r.a.n+' 场</title></rect>';
+    h+='<text x="'+(pl+w+8).toFixed(1)+'" y="'+(y+bh/2+4).toFixed(1)+'" font-size="12" font-weight="700" fill="var(--tx)">'+m.fmt(v)+'</text>';
+    h+='</g>';
+  });
+  if(tv!=null){
+    var tx=pl+(tv/mx)*iw;
+    h+='<line x1="'+tx.toFixed(1)+'" y1="'+pt+'" x2="'+tx.toFixed(1)+'" y2="'+(H-pb)+'" stroke="var(--tx3)" stroke-width="1.4" stroke-dasharray="5 4"/>'+
+       '<text x="'+(tx+5).toFixed(1)+'" y="'+(pt+11)+'" font-size="10.5" fill="var(--tx3)">团队均值 '+m.fmt(tv)+'</text>';
+  }
+  $('#crossChart').innerHTML=svgEl('0 0 '+W+' '+H, Math.min(H,460))+h+'</svg><div class="lg"><span>纵轴：'+m.t+(dim==='anchor'?' · 点击柱子聚焦该主播':'')+'</span></div>';
+
+  var dt=CROSS_DIM.filter(function(x){return x.k===dim;})[0].t;
+  var th='<thead><tr><th>'+dt+'</th><th class="tr">场次</th><th class="tr">消耗</th><th class="tr">线索</th><th class="tr">单线索成本</th><th class="tr">小时产量</th><th class="tr">'+m.t+'</th></tr></thead><tbody>';
+  arr.forEach(function(r){
+    th+='<tr'+(state.focus&&state.focus===r.name?' class="hl"':'')+'><td><b>'+esc(r.name)+'</b></td><td class="tr num">'+fmt(r.a.n)+'</td><td class="tr num">¥'+fmtK(r.a.cost)+'</td><td class="tr num"><b>'+fmt(r.a.leads)+'</b></td><td class="tr num">'+(r.a.cpl==null?'—':'¥'+fmt(r.a.cpl,0))+'</td><td class="tr num">'+fmt(r.a.lph,2)+' </td><td class="tr num">'+m.fmt(m.f(r.a)||0)+'</td></tr>';
+  });
+  $('#crossTable').innerHTML='<table class="ctab">'+th+'</tbody></table>';
+
+  var cmp=arr.filter(function(r){return m.f(r.a)!=null;}).map(function(r){ return {name:r.name, v:m.f(r.a)}; });
+  if(cmp.length){
+    cmp.sort(function(x,y){ return m.rev ? (x.v-y.v) : (y.v-x.v); });
+    var best=cmp[0], worst=cmp[cmp.length-1];
+    var d1=m.rev?'最优（最低）':'最优（最高）', d2=m.rev?'最差（最高）':'最差（最低）';
+    $('#crossCmp').innerHTML='<div class="cmp-row"><span class="cmp-k">'+d1+'</span><b>'+esc(best.name)+'</b><span class="num">'+m.fmt(best.v)+'</span></div>'+
+      '<div class="cmp-row"><span class="cmp-k">'+d2+'</span><b>'+esc(worst.name)+'</b><span class="num">'+m.fmt(worst.v)+'</span></div>'+
+      (tv!=null?'<div class="cmp-row"><span class="cmp-k">团队均值</span><b>—</b><span class="num">'+m.fmt(tv)+'</span></div>':'');
+  } else $('#crossCmp').innerHTML='<div class="empty" style="padding:10px">该指标无有效数据</div>';
 }
 
 /* ==================== 主播详情抽屉 ==================== */
@@ -876,7 +1024,7 @@ function renderHeat(){
   names.forEach(function(n){
     cells[n]={};
     BUCKETS.forEach(function(b){
-      var sub=byA[n].filter(function(s){ return s.u===b; });
+      var sub=byA[n].filter(function(s){ return s.bucket===b; });
       if(!sub.length) return;
       var v=m.f(agg(sub));
       if(v!=null){ cells[n][b]={v:v,n:sub.length}; vals.push(v); }
@@ -943,7 +1091,7 @@ function renderSlot(){
   arr.sort(function(x,y){ return y.a.leads-x.a.leads; });
   if(!arr.length){ $('#slotChart').innerHTML='<div class="empty">无数据</div>'; return; }
   var tot=arr.reduce(function(a,b){return a+b.a.leads;},0);
-  var W=1000,H=280,cx=250,cy=132,R=104,r0=58;
+  var W=1000, lh=44+(arr.length-1)*54+55, H=Math.max(280,lh), cx=250,cy=132,R=104,r0=58;
   var ang=-Math.PI/2, h='';
   arr.forEach(function(x,i){
     var p=tot?x.a.leads/tot:0, a2=ang+p*Math.PI*2, c=PAL[i%PAL.length];
@@ -963,12 +1111,12 @@ function renderSlot(){
   });
   h+='<text x="'+cx+'" y="'+(cy-6)+'" text-anchor="middle" font-size="12" fill="var(--tx3)">总线索</text>';
   h+='<text x="'+cx+'" y="'+(cy+18)+'" text-anchor="middle" font-size="23" font-weight="700" fill="var(--tx)">'+fmt(tot)+'</text>';
-  $('#slotChart').innerHTML=svgEl('0 0 '+W+' '+H,270)+h+'</svg>';
+  $('#slotChart').innerHTML=svgEl('0 0 '+W+' '+H,Math.min(H,420))+h+'</svg>';
 }
 
 /* ==================== 月度表 ==================== */
 function renderMonth(){
-  var byM={}; VIEW.forEach(function(s){ (byM[s.y]=byM[s.y]||[]).push(s); });
+  var byM={}; VIEW.forEach(function(s){ (byM[s.ym]=byM[s.ym]||[]).push(s); });
   var ms=Object.keys(byM).sort().reverse();
   var h='<thead><tr><th>月份</th><th class="tr">场次</th><th class="tr">计费小时</th><th class="tr">消耗</th><th class="tr">线索量</th><th class="tr">单线索成本</th><th class="tr">小时产量</th><th class="tr">小时消耗</th><th class="tr">点击率</th><th class="tr">留资转化</th></tr></thead><tbody>';
   ms.forEach(function(m){
@@ -1089,7 +1237,7 @@ function renderAll(){
   renderKPI(); renderAlerts(); renderDigest(); renderTrend(); renderShare(); renderFunnel();
   renderScatter(); renderAnchorCards();
   renderHeat(); renderWd(); renderSlot(); renderMonth();
-  renderDetail();
+  renderDetail(); renderCross(); updateFocusBar();
 }
 
 /* ==================== 初始化 ==================== */
@@ -1100,7 +1248,7 @@ function initUI(){
   $$('#quickRange .chip').forEach(function(b){
     b.onclick=function(){
       var d=+b.dataset.d;
-      if(d>9000){ state.d1=DATA.meta.dateMin; state.d2=DATA.meta.dateMax; $('#d1').value=state.d1; $('#d2').value=state.d2; renderAll(); }
+      if(d>9000){ state.d1=(DATA_WINDOW_START>DATA.meta.dateMin)?DATA_WINDOW_START:DATA.meta.dateMin; state.d2=DATA.meta.dateMax; $('#d1').value=state.d1; $('#d2').value=state.d2; renderAll(); }
       else setRange(d);
       b.classList.add('on');
     };
@@ -1120,6 +1268,19 @@ function initUI(){
   $('#pivotMetric').innerHTML=PIVOT_M.map(function(m,i){ return '<button class="chip'+(i===0?' on':'')+'" data-k="'+m.k+'">'+m.t+'</button>'; }).join('');
   $$('#pivotMetric .chip').forEach(function(b){
     b.onclick=function(){ $$('#pivotMetric .chip').forEach(function(x){x.classList.remove('on');}); b.classList.add('on'); state.pivot=b.dataset.k; renderHeat(); };
+  });
+  // 交叉对比：维度 / 指标
+  $('#crossDim').innerHTML=CROSS_DIM.map(function(x){ return '<button class="chip'+(x.k===state.crossDim?' on':'')+'" data-k="'+x.k+'">'+x.t+'</button>'; }).join('');
+  $$('#crossDim .chip').forEach(function(b){ b.onclick=function(){ $$('#crossDim .chip').forEach(function(x){x.classList.remove('on');}); b.classList.add('on'); state.crossDim=b.dataset.k; renderCross(); }; });
+  $('#crossMetric').innerHTML=CROSS_M.map(function(x){ return '<button class="chip'+(x.k===state.crossMetric?' on':'')+'" data-k="'+x.k+'">'+x.t+'</button>'; }).join('');
+  $$('#crossMetric .chip').forEach(function(b){ b.onclick=function(){ $$('#crossMetric .chip').forEach(function(x){x.classList.remove('on');}); b.classList.add('on'); state.crossMetric=b.dataset.k; renderCross(); }; });
+  // 热力图点击聚焦（事件委托，避免重写单元格字符串）
+  var hc=document.getElementById('heatChart');
+  if(hc) hc.addEventListener('click', function(e){
+    var td=e.target.closest('td'); if(!td) return;
+    var tr=td.parentNode; if(!tr||!tr.querySelector) return;
+    var rh=tr.querySelector('.rh'); if(!rh) return;
+    setFocus(encodeURIComponent(rh.textContent.trim()));
   });
   // Tab
   $$('.tab').forEach(function(t){
@@ -1204,6 +1365,7 @@ function bucket_of(s) {
   if (18 <= h && h < 22) return '晚间 18-22';
   return '深夜 22-06';
 }
+var DATA_WINDOW_START = '2025-04-01';   // 硬性时间窗：仅保留此后数据，每日刷新严格生效，除非收到特别指令
 function build_sessions(rows) {
   var out = [];
   for (var i = 0; i < rows.length; i++) {
@@ -1212,6 +1374,7 @@ function build_sessions(rows) {
     var dt = parse_date(cell(f, '直播日期'));
     if (!dt || !anchor) continue;
     var d = dt.dateStr;
+    if (d < DATA_WINDOW_START) continue;   // 硬性时间窗：丢弃 2025-04-01 之前的场次
     var sm = hhmm(cell(f, '开播时间')), em = hhmm(cell(f, '下播时间'));
     var dm = null;
     if (sm !== null && em !== null) {
@@ -1289,9 +1452,9 @@ function transformRaw(raw) {
 /* ============ 转换结束 ============ */
 
 function boot(d){
-  DATA=d; SESS=d.sessions||[];
+  DATA=d; SESS=(d.sessions||[]).filter(function(s){ return (s.d||'') >= DATA_WINDOW_START; });
   if(!SESS.length){ document.querySelector('.wrap').innerHTML='<div class="empty">数据为空</div>'; return; }
-  $('#syncInfo').textContent='同步于 '+d.meta.syncedAt+'　·　'+fmt(d.meta.total)+' 场';
+  $('#syncInfo').textContent='同步于 '+d.meta.syncedAt+'　·　'+fmt(d.meta.total)+' 场　·　窗口 '+DATA_WINDOW_START+' 起';
   initUI();
   // 默认近 90 天
   var b=new Date(d.meta.dateMax), a=new Date(b.getTime()-89*864e5);
@@ -1299,7 +1462,7 @@ function boot(d){
   if(a<lo) a=lo;
   state.d1=a.toISOString().slice(0,10); state.d2=d.meta.dateMax;
   $('#d1').value=state.d1; $('#d2').value=state.d2;
-  $('#d1').min=d.meta.dateMin; $('#d1').max=d.meta.dateMax;
+  $('#d1').min=DATA_WINDOW_START; $('#d1').max=d.meta.dateMax;
   $('#d2').min=d.meta.dateMin; $('#d2').max=d.meta.dateMax;
   renderAll();
   $$('#quickRange .chip')[2].classList.add('on');
