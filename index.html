@@ -243,7 +243,7 @@ table.ctab tr.hl td{background:var(--panel2)}
 .kpi .no-spark{display:block;height:24px;line-height:24px;font-size:10.5px;color:var(--tx3);opacity:.6}
 .pyr-wrap{display:flex;flex-direction:column;gap:0}
 .pyr-svg{display:block;width:100%}
-.pyr-summary{font-size:12.5px;line-height:1.7;color:var(--tx2);padding:10px 12px;margin-top:8px;border-left:3px solid var(--pri);background:linear-gradient(90deg,var(--pri-bg,#eef2ff),transparent 80%);border-radius:0 6px 6px 0}
+.pyr-summary{box-sizing:border-box;width:100%;padding:12px 16px;background:var(--panel2);border-left:4px solid var(--pri);border-radius:8px;font-size:12.5px;line-height:1.75;white-space:normal;word-wrap:break-word;overflow-wrap:break-word;color:var(--tx1);font-family:inherit}.pyr-summary b{color:var(--pri);font-weight:700}.pyr-summary .up{color:var(--up);font-weight:600}.pyr-summary .warn{color:var(--warn);font-weight:600}.pyr-summary .down{color:var(--down);font-weight:600}.pyr-summary .dim{color:var(--tx3)}.pyr-summary br+br{display:none}.mt-tt{position:fixed;z-index:9999;background:var(--panel);border:1px solid var(--line);border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.14);padding:9px 12px;font-size:12px;pointer-events:none;display:none;min-width:170px;max-width:240px}.mt-tt-d{font-weight:700;color:var(--pri);margin-bottom:6px;font-size:12.5px;border-bottom:1px solid var(--line);padding-bottom:5px}.mt-tt-r{display:flex;align-items:center;gap:7px;padding:2px 0;color:var(--tx2)}.mt-tt-r i{display:inline-block;width:9px;height:9px;border-radius:2px;flex-shrink:0}.mt-tt-r b{color:var(--tx1);margin-left:auto;font-weight:700}.mt-tt-r .dim{color:var(--tx3);font-style:italic}
 .pyr-summary b{color:var(--tx);font-weight:700}
 .pyr-summary .dim{color:var(--tx3)}
 .pyr-summary .up{color:var(--up)}
@@ -414,7 +414,7 @@ window.__PRELOADED__={"meta": {"source": "飞书多维表格 · 迈科代理直�
         <div class="ch-h">月度趋势 · 消耗 / 留资 / 单线索成本</div>
         <div id="monthTrend"></div>
         <div class="mt-split"></div>
-        <div class="mg-head"><span class="ch-h" style="border:0;margin:0;padding:0">月份 × 主播 热力网格</span><div class="sp"></div><div class="chips" id="monthMetric"></div></div>
+        <div class="mg-head"><span class="ch-h" style="border:0;margin:0;padding:0">主播 × 时段 热力网格</span><div class="sp"></div><div class="chips" id="monthMetric"></div></div>
         <div class="tw"><table class="mg" id="monthGrid"></table></div>
       </div>
     </div>
@@ -470,6 +470,41 @@ window.__PRELOADED__={"meta": {"source": "飞书多维表格 · 迈科代理直�
 <script>
 /* ==================== 常量 ==================== */
 
+
+/* ==================== 月度趋势 tooltip helper（全局） ==================== */
+function mtShow(e, el){
+  var tt = document.getElementById('mt-tt');
+  if(!tt){
+    tt = document.createElement('div');
+    tt.id = 'mt-tt';
+    tt.className = 'mt-tt';
+    document.body.appendChild(tt);
+  }
+  var d = el.dataset;
+  var rowHtml = function(label, c, val, dim){
+    return '<div class="mt-tt-r"><i style="background:'+c+'"></i>'+label+'<b>'+(dim?'<span class="dim">'+dim+'</span>':val)+'</b></div>';
+  };
+  var cost = d.c==='' ? null : +d.c;
+  var leads= d.l==='' ? null : +d.l;
+  var cpl  = d.p==='' ? null : +d.p;
+  tt.innerHTML =
+    '<div class="mt-tt-d">'+d.b+'</div>' +
+    rowHtml('消耗', 'var(--c1)', '¥'+fmtK(cost||0), cost==null?'—':null) +
+    rowHtml('留资', 'var(--c2)', fmt(leads||0)+' 条', leads==null?'—':null) +
+    rowHtml('CPL',  'var(--c3)', cpl==null?'—':'¥'+fmt(cpl,0), null);
+  // 智能定位：靠近鼠标但避免溢出
+  var tw = 190, th = 110;
+  var x = e.clientX + 14, y = e.clientY + 14;
+  if(x+tw > window.innerWidth)  x = e.clientX - tw - 10;
+  if(y+th > window.innerHeight) y = e.clientY - th - 10;
+  tt.style.left = x + 'px';
+  tt.style.top  = y + 'px';
+  tt.style.display = 'block';
+}
+function mtHide(){
+  var tt = document.getElementById('mt-tt');
+  if(tt) tt.style.display = 'none';
+}
 var PAL = ['#2563eb','#0e9f6e','#f59e0b','#8b5cf6','#ec4899','#06b6d4','#ef4444','#84cc16','#f97316','#14b8a6','#a855f7','#3b82f6'];
 var BUCKETS = ['早间 06-10','午间 10-14','下午 14-18','晚间 18-22','深夜 22-06'];
 var WD = ['周一','周二','周三','周四','周五','周六','周日'];
@@ -1094,6 +1129,23 @@ function renderHeat(){
       if(v!=null){ cells[n][b]={v:v,n:sub.length}; vals.push(v); }
     });
   });
+  // 主指标无数据时自动 fallback 到线索量（leads）并提示
+  var fallbackNote='';
+  if(!vals.length && state.pivot!=='leads'){
+    state.pivot='leads';
+    var m2 = PIVOT_M.filter(function(x){return x.k==='leads';})[0];
+    cells={}; vals=[];
+    names.forEach(function(n){
+      cells[n]={};
+      BUCKETS.forEach(function(b){
+        var sub=byA[n].filter(function(s){ return s.bucket===b; });
+        if(!sub.length) return;
+        var v=m2.f(agg(sub));
+        if(v!=null){ cells[n][b]={v:v,n:sub.length}; vals.push(v); }
+      });
+    });
+    if(vals.length){ m=m2; fallbackNote='<span style="color:var(--warn);font-weight:600">⚠ 原指标无有效数据，已自动切换为线索量</span>'; }
+  }
   if(!vals.length){ $('#heatChart').innerHTML='<div class="empty">该指标无有效数据</div>'; return; }
   var mn=Math.min.apply(null,vals), mx=Math.max.apply(null,vals);
   var col=function(v){
@@ -1105,7 +1157,8 @@ function renderHeat(){
     else { var k2=(t-0.5)*2; r=245+(14-245)*k2; g=158+(159-158)*k2; b=11+(110-11)*k2; }
     return 'rgb('+Math.round(r)+','+Math.round(g)+','+Math.round(b)+')';
   };
-  var h='<table class="heat"><thead><tr><th style="width:88px"></th>'+
+  var h='<div class="pyr-head"><span class="badge">主播 × 时段　'+m.t+'</span>'+fallbackNote+'<span class="sub" style="font-size:10.5px">'+VIEW.length+' 场 · 当前窗口</span></div>'
+       +'<table class="heat"><thead><tr><th style="width:88px"></th>'+
     BUCKETS.map(function(b){ return '<th>'+b+'</th>'; }).join('')+'<th style="width:62px">合计</th></tr></thead><tbody>';
   names.forEach(function(n){
     h+='<tr><td class="rh">'+esc(n)+'</td>';
@@ -1231,62 +1284,76 @@ function genSumFlow(o, ctr, cvr, mvr){
 }
 
 /* ====== 金字塔 SVG 生成（垂直梯形、层间箭头 + 转化率徽章 + 底部摘要） ====== */
+/* ====== 金字塔 SVG 生成 v3（水平居中 + 中央大数字 + 大胶囊转化率徽章 + 宽摘要） ====== */
 function buildPyramid(steps, rates, summary){
   // steps: [{t, fmt, c, fw, fb}] 从顶（最窄）到 底（最宽）
   // rates: 长度 = steps.length-1，层间转化率
   var n = steps.length;
-  var W = 620, baseW = 480;
-  var top = 18, bh = 50, gap = 36;
-  var sumH = 86;
-  var H = top + n*bh + (n-1)*gap + sumH + 8;
+  var W = 720, baseW = 540;
+  var top = 22, bh = 58, gap = 48;
+  var sumH = 130;
+  var H = top + n*bh + (n-1)*gap + sumH + 14;
   var cx = W/2;
   var h = '';
-  for(var i=0; i<n; i++){
+  // defs: 每层渐变
+  h += '<defs>';
+  for(var i=0;i<n;i++){
+    h += '<linearGradient id="pyr-g'+i+'" x1="0%" y1="0%" x2="100%" y2="0%">'
+       + '<stop offset="0%" stop-color="'+steps[i].c+'" stop-opacity="0.78"/>'
+       + '<stop offset="100%" stop-color="'+steps[i].c+'" stop-opacity="1"/>'
+       + '</linearGradient>';
+  }
+  h += '</defs>';
+  for(var i=0;i<n;i++){
     var s = steps[i];
     var y = top + i*(bh+gap);
     var wTop = baseW * s.fw;
     var wBot = baseW * s.fb;
     var xTop = cx - wTop/2;
     var xBot = cx - wBot/2;
-    // 梯形（带轻微描边提升层次感）
+    // 投影（轻微）
+    h += '<polygon points="'+(xBot+2).toFixed(1)+','+(y+2)+' '+(xBot+wBot+2).toFixed(1)+','+(y+2)+' '+(xBot+wBot+2).toFixed(1)+','+(y+bh+4).toFixed(1)+' '+(xBot+2).toFixed(1)+','+(y+bh+4).toFixed(1)+'" fill="rgba(0,0,0,.08)"/>';
+    // 梯形主体
     h += '<polygon points="'+xTop.toFixed(1)+','+y+' '
         +(xTop+wTop).toFixed(1)+','+y+' '
         +(xBot+wBot).toFixed(1)+','+(y+bh)+' '
         +xBot.toFixed(1)+','+(y+bh)+'" '
-        +'fill="'+s.c+'" opacity="0.92" stroke="rgba(255,255,255,.6)" stroke-width="1.2"/>';
-    // 顶层高光
+        +'fill="url(#pyr-g'+i+')" stroke="rgba(255,255,255,.75)" stroke-width="1.5"/>';
+    // 顶部高光带
     h += '<polygon points="'+xTop.toFixed(1)+','+y+' '
         +(xTop+wTop).toFixed(1)+','+y+' '
-        +(xTop+wTop*0.92).toFixed(1)+','+(y+4).toFixed(1)+' '
-        +(xTop+wTop*0.08).toFixed(1)+','+(y+4).toFixed(1)+'" '
-        +'fill="rgba(255,255,255,.18)"/>';
-    // 标签：左侧
-    h += '<text x="'+(xBot-10).toFixed(1)+'" y="'+(y+bh/2-3).toFixed(1)+'" text-anchor="end" font-size="13" font-weight="600" fill="var(--tx2)">'+esc(s.t)+'</text>';
-    h += '<text x="'+(xBot-10).toFixed(1)+'" y="'+(y+bh/2+15).toFixed(1)+'" text-anchor="end" font-size="15.5" font-weight="800" fill="'+s.c+'">'+esc(s.fmt)+'</text>';
-    // 层间：箭头 + 转化率徽章
+        +(xTop+wTop*0.94).toFixed(1)+','+(y+5)+' '
+        +(xTop+wTop*0.06).toFixed(1)+','+(y+5)+'" '
+        +'fill="rgba(255,255,255,.3)"/>';
+    // 顶部小标签（左侧内）
+    h += '<text x="'+(xTop+12).toFixed(1)+'" y="'+(y+19).toFixed(1)+'" text-anchor="start" font-size="11.5" font-weight="600" fill="rgba(255,255,255,.96)">'+esc(s.t)+'</text>';
+    // 中央大数字（白色，字重 800，阴影增强可读）
+    h += '<text x="'+cx.toFixed(1)+'" y="'+(y+bh/2+9).toFixed(1)+'" text-anchor="middle" font-size="24" font-weight="800" fill="#fff" style="text-shadow:0 1px 3px rgba(0,0,0,.3)">'+esc(s.fmt)+'</text>';
+    // 层间
     if(i < n-1){
       var midY = y + bh + gap/2;
-      h += '<line x1="'+cx.toFixed(1)+'" y1="'+(y+bh+4)+'" x2="'+cx.toFixed(1)+'" y2="'+midY.toFixed(1)+'" stroke="var(--tx3)" stroke-width="1.4" stroke-dasharray="3 3"/>';
-      h += '<polygon points="'+cx.toFixed(1)+','+(midY+6)+' '+(cx-5).toFixed(1)+','+(midY-2)+' '+(cx+5).toFixed(1)+','+(midY-2)+'" fill="var(--tx3)"/>';
+      // 渐变箭头连线
+      h += '<line x1="'+cx.toFixed(1)+'" y1="'+(y+bh+4)+'" x2="'+cx.toFixed(1)+'" y2="'+(midY-14).toFixed(1)+'" stroke="'+s.c+'" stroke-width="2.2" opacity="0.55" stroke-dasharray="4 3"/>';
+      h += '<polygon points="'+cx.toFixed(1)+','+(midY+8)+' '+(cx-7).toFixed(1)+','+(midY-3)+' '+(cx+7).toFixed(1)+','+(midY-3)+'" fill="'+s.c+'"/>';
+      // 转化率大胶囊徽章（中央显眼位置，宽度自适应）
       var label = rates[i].a;
-      var lw = label.length * 7 + 16;
-      h += '<rect x="'+(14).toFixed(1)+'" y="'+(midY-11).toFixed(1)+'" width="'+lw+'" height="22" rx="11" fill="var(--pri-bg)" stroke="var(--pri)" stroke-width="1"/>';
-      h += '<text x="'+(14+lw/2).toFixed(1)+'" y="'+(midY+4).toFixed(1)+'" text-anchor="middle" font-size="11.5" font-weight="700" fill="var(--pri)">'+esc(label)+'</text>';
+      var lw = Math.max(86, label.length * 8.4 + 28);
+      h += '<rect x="'+(cx-lw/2).toFixed(1)+'" y="'+(midY-13).toFixed(1)+'" width="'+lw.toFixed(1)+'" height="26" rx="13" fill="#fff" stroke="'+steps[i+1].c+'" stroke-width="2"/>';
+      h += '<text x="'+cx.toFixed(1)+'" y="'+(midY+5).toFixed(1)+'" text-anchor="middle" font-size="12.5" font-weight="700" fill="'+steps[i+1].c+'">'+esc(label)+'</text>';
     }
   }
-  // 摘要
-  var sumY = top + n*(bh+gap) + 6;
-  h += '<foreignObject x="0" y="'+sumY+'" width="'+W+'" height="'+sumH+'">';
-  h += '<div xmlns="http://www.w3.org/1999/xhtml" class="pyr-summary">'+summary+'</div>';
+  // 摘要（宽容器，左右留白，避免文字被截断）
+  var sumY = top + n*(bh+gap) + 8;
+  h += '<foreignObject x="6" y="'+sumY+'" width="'+(W-12)+'" height="'+sumH+'">';
+  h += '<div xmlns="http://www.w3.org/2000/xhtml" class="pyr-summary">'+summary+'</div>';
   h += '</foreignObject>';
-  return svgEl('0 0 '+W+' '+H, Math.min(H, 500)) + h + '</svg>';
+  return svgEl('0 0 '+W+' '+H, Math.min(H, 580)) + h + '</svg>';
 }
-
 /* ==================== 主播规律矩阵 v2（星期 / 场次 × 主播，匹配修复 + 指标 chip） ==================== */
 function renderMatrix(){
   var cols = state.pivotDim==='p' ? BUCKETS : WD;
   // 关键修复：'wd' 模式 s.wd 是数字 0-6，cols 是字符串，不能直接 ===，必须按列下标匹配
-  function match(s, ci){ return state.pivotDim==='p' ? s.p===cols[ci] : s.wd===ci; }
+  function match(s, ci){ return state.pivotDim==='p' ? s.bucket===cols[ci] : s.wd===ci; }
   var byA={}; VIEW.forEach(function(s){ (byA[s.a]=byA[s.a]||[]).push(s); });
   var names=Object.keys(byA).sort(function(x,y){ return agg(byA[y]).leads-agg(byA[x]).leads; }).slice(0,12);
   if(!names.length){ $('#matrixChart').innerHTML='<div class="empty">数据不足</div>'; return; }
@@ -1333,6 +1400,7 @@ function renderMatrix(){
 }
 
 /* ==================== 月度趋势 v2（按日/按月自适应 + 单期降级） ==================== */
+/* ==================== 月度趋势 v3（按日/按月自适应 + Y 轴 tick + 跟随鼠标 tooltip + 柱+折线 组合图） ==================== */
 function renderMonthTrend(){
   var byD={}; VIEW.forEach(function(s){ (byD[s.d]=byD[s.d]||[]).push(s); });
   var ds=Object.keys(byD).sort();
@@ -1347,7 +1415,7 @@ function renderMonthTrend(){
   var buckets = useDaily ? ds : ms;
   var byBucket = useDaily ? byD : byM;
 
-  // 单期：降级为大数字 KPI 卡片
+  // 单期：降级为 5 KPI 卡片
   if(buckets.length < 2){
     var b = buckets[0] || '?';
     var o = agg(byBucket[b]);
@@ -1365,7 +1433,7 @@ function renderMonthTrend(){
     return;
   }
 
-  // 多期：按自身区间归一化画 3 条折线
+  // 多期：3 系列
   var series={
     cost:  buckets.map(function(b){ return agg(byBucket[b]).cost; }),
     leads: buckets.map(function(b){ return agg(byBucket[b]).leads; }),
@@ -1376,46 +1444,98 @@ function renderMonthTrend(){
     {k:'leads', t:'留资数',     c:'var(--c2)', last:fmt(series.leads[buckets.length-1])},
     {k:'cpl',   t:'单线索成本', c:'var(--c3)', last:series.cpl[buckets.length-1]==null?'—':'¥'+fmt(series.cpl[buckets.length-1],0)}
   ];
+  // 归一化（保留 null）
   function norm(arr){ var v=arr.filter(function(x){return x!=null;}); if(!v.length) return arr;
     var mn=Math.min.apply(null,v), mx=Math.max.apply(null,v);
     return arr.map(function(x){ return x==null?null:(mx===mn?0.5:(x-mn)/(mx-mn)); }); }
   var nCost=norm(series.cost), nLeads=norm(series.leads), nCpl=norm(series.cpl);
-  var W=1000,H=280,pl=44,pr=18,pt=22,pb=44, iw=W-pl-pr, ih=H-pt-pb;
+
+  // 原始极值（用于 Y 轴 / tooltip 显示）
+  var rawMaxCost = Math.max.apply(null, series.cost.filter(function(x){return x!=null;}).concat([1]));
+  var rawMaxLeads= Math.max.apply(null, series.leads.filter(function(x){return x!=null;}).concat([1]));
+  var rawMaxCpl  = Math.max.apply(null, series.cpl.filter(function(x){return x!=null;}).concat([1]));
+
+  var W=1000,H=300,pl=48,pr=20,pt=28,pb=48, iw=W-pl-pr, ih=H-pt-pb;
   var X=function(i){ return pl+(buckets.length<2?iw/2:i*iw/(buckets.length-1)); };
   var Y=function(t){ return pt+ih-(t)*ih; };
   var g='';
-  for(var i=0;i<=4;i++){ var y=pt+ih*i/4; g+='<line x1="'+pl+'" y1="'+y.toFixed(1)+'" x2="'+(W-pr)+'" y2="'+y.toFixed(1)+'" stroke="var(--line)" stroke-dasharray="3 4"/>'; }
+  // Y 轴 5 个 tick（虚线 + 标签 0/0.25/0.5/0.75/1.0 + 原值范围小字）
+  for(var i=0;i<=4;i++){
+    var y=pt+ih*i/4;
+    var ratio=(4-i)/4;
+    g+='<line x1="'+pl+'" y1="'+y.toFixed(1)+'" x2="'+(W-pr)+'" y2="'+y.toFixed(1)+'" stroke="var(--line)" stroke-dasharray="3 4"/>';
+    g+='<text x="'+(pl-6).toFixed(1)+'" y="'+(y+3.5).toFixed(1)+'" text-anchor="end" font-size="10" fill="var(--tx3)">'+ratio.toFixed(2)+'</text>';
+  }
+  // Y 轴标题（旋转）：归一化空间
+  g+='<text x="12" y="'+(pt+ih/2)+'" text-anchor="middle" font-size="10" fill="var(--tx3)" transform="rotate(-90 12 '+(pt+ih/2)+')">归一化值（各指标独立）</text>';
+
+  // CPL 柱状（半透明）
+  var bw=Math.max(2, Math.min(16, iw/buckets.length*0.6));
+  var bars='';
+  buckets.forEach(function(b,i){
+    if(nCpl[i]==null) return;
+    var x=X(i);
+    bars+='<rect x="'+(x-bw/2).toFixed(1)+'" y="'+Y(nCpl[i]).toFixed(1)+'" width="'+bw.toFixed(1)+'" height="'+(pt+ih-Y(nCpl[i])).toFixed(1)+'" fill="var(--c3)" opacity="0.32" rx="2"/>';
+  });
+  // 折线函数
   function linePath(ns){ var segs=[],cur=[]; ns.forEach(function(v,i){ if(v==null){ if(cur.length)segs.push(cur); cur=[]; } else cur.push([X(i),Y(v)]); }); if(cur.length)segs.push(cur);
     return segs.map(function(sg){ return 'M'+sg.map(function(p){return p[0].toFixed(1)+' '+p[1].toFixed(1);}).join('L'); }).join(' '); }
   var paths='';
   paths+='<path d="'+linePath(nCost)+'" fill="none" stroke="var(--c1)" stroke-width="2.4" stroke-linejoin="round"/>';
   paths+='<path d="'+linePath(nLeads)+'" fill="none" stroke="var(--c2)" stroke-width="2.4" stroke-linejoin="round"/>';
-  paths+='<path d="'+linePath(nCpl)+'" fill="none" stroke="var(--c3)" stroke-width="2.4" stroke-dasharray="5 4" stroke-linejoin="round"/>';
+  // 点
   var dots='', colMap={cost:'var(--c1)',leads:'var(--c2)',cpl:'var(--c3)'};
   buckets.forEach(function(b,i){
-    [['cost',series.cost[i],nCost[i],'¥'+fmtK(series.cost[i])],
-     ['leads',series.leads[i],nLeads[i],fmt(series.leads[i])],
-     ['cpl',series.cpl[i],nCpl[i],(series.cpl[i]==null?'—':'¥'+fmt(series.cpl[i],0))]].forEach(function(p){
-      if(p[2]==null) return;
-      dots+='<circle cx="'+X(i).toFixed(1)+'" cy="'+Y(p[2]).toFixed(1)+'" r="2.6" fill="'+colMap[p[0]]+'" stroke="var(--panel)" stroke-width="1.5"><title>'+b+' '+p[0]+'：'+p[3]+'</title></circle>';
+    [['cost',nCost[i]],['leads',nLeads[i]],['cpl',nCpl[i]]].forEach(function(p){
+      if(p[1]==null) return;
+      dots+='<circle cx="'+X(i).toFixed(1)+'" cy="'+Y(p[1]).toFixed(1)+'" r="2.8" fill="'+colMap[p[0]]+'" stroke="var(--panel)" stroke-width="1.5"/>';
     });
   });
+  // X 轴 tick label
   var lb='', ls=Math.max(1,Math.ceil(buckets.length/10));
   buckets.forEach(function(b,i){
     if(i%ls && i!==buckets.length-1) return;
     var lbl = useDaily ? b.slice(5) : b.slice(2);
     lb+='<text x="'+X(i).toFixed(1)+'" y="'+(H-16)+'" text-anchor="middle" font-size="11" fill="var(--tx3)">'+lbl+'</text>';
   });
+  // 透明捕捉层（hover tooltip）：每个 bucket 一个 rect 覆盖 ~ bucket 间距高度
+  var hitBoxes='';
+  buckets.forEach(function(b,i){
+    var x0 = i>0 ? (X(i-1)+X(i))/2 : X(i) - (i<buckets.length-1 ? (X(i+1)-X(i))/2 : 0);
+    var x1 = i<buckets.length-1 ? (X(i)+X(i+1))/2 : X(i) + (X(i)-X(i-1))/2;
+    if(i===0) x0 = X(i) - (X(1)-X(0))/2;
+    if(i===buckets.length-1) x1 = X(i) + (X(i)-X(i-1))/2;
+    var c = series.cost[i];
+    var l = series.leads[i];
+    var p = series.cpl[i];
+    hitBoxes+='<rect class="mt-hit" x="'+x0.toFixed(1)+'" y="'+pt+'" width="'+(x1-x0).toFixed(1)+'" height="'+ih+'" fill="transparent" '
+      +'data-b="'+esc(buckets[i])+'" data-c="'+(c==null?'':c)+'" data-l="'+(l==null?'':l)+'" data-p="'+(p==null?'':p)+'" '
+      +'onmouseenter="mtShow(event,this)" onmousemove="mtShow(event,this)" onmouseleave="mtHide()"/>';
+  });
+  // 鼠标竖线指示
+  var vline='<line id="mt-vline" x1="-99" y1="'+pt+'" x2="-99" y2="'+(pt+ih)+'" stroke="var(--pri)" stroke-width="1" stroke-dasharray="3 3" opacity="0"/>';
+
   var lg=defs.map(function(d){ return '<span><i style="background:'+d.c+'"></i>'+d.t+' <b>'+d.last+'</b></span>'; }).join('');
   var modeTxt = useDaily ? '按日趋势' : '按月趋势';
   var spanTxt = useDaily ? ('共 '+buckets.length+' 天') : ('共 '+buckets.length+' 个月');
   $('#monthTrend').innerHTML=
-    '<div class="pyr-head"><span class="badge">'+modeTxt+'</span><span class="sub" style="font-size:10.5px">'+spanTxt+' · 跨度 '+Math.round(dateSpan)+' 天</span></div>'
-    +svgEl('0 0 '+W+' '+H,300)+g+paths+dots+lb+
-    '<text x="'+(W-pr)+'" y="'+(H-2)+'" text-anchor="end" font-size="10" fill="var(--tx3)">各指标按自身区间归一化（看趋势关联）</text></svg>'+
+    '<div class="pyr-head"><span class="badge">'+modeTxt+'</span><span class="sub" style="font-size:10.5px">'+spanTxt+' · 跨度 '+Math.round(dateSpan)+' 天 · 鼠标悬停查看明细</span></div>'
+    +svgEl('0 0 '+W+' '+H,320)+g+bars+paths+dots+vline+hitBoxes+lb+
+    '<text x="'+(W-pr)+'" y="'+(H-2)+'" text-anchor="end" font-size="10" fill="var(--tx3)">柱：CPL（自身归一化）/ 折线：消耗、留资 · Y 轴为各指标归一化空间</text></svg>'+
     '<div class="lg">'+lg+'</div>';
+  // 鼠标竖线更新
+  $$('#monthTrend .mt-hit').forEach(function(r){
+    r.addEventListener('mousemove', function(e){
+      var rect = $('#monthTrend svg').getBoundingClientRect();
+      var vl = document.getElementById('mt-vline');
+      if(vl) vl.setAttribute('x1', e.clientX-rect.left), vl.setAttribute('x2', e.clientX-rect.left), vl.setAttribute('opacity','0.5');
+    });
+    r.addEventListener('mouseleave', function(){
+      var vl = document.getElementById('mt-vline');
+      if(vl) vl.setAttribute('opacity','0');
+    });
+  });
 }
-
 /* ==================== 月度 × 主播 重做：主播 × 时段 热力图（当前窗口）+ chips ==================== */
 function renderMonthGrid(){
   // 改为：当前筛选范围内，主播 × 时段(5 桶) 的热力图
@@ -1445,6 +1565,23 @@ function renderMonthGrid(){
       if(v!=null){ cells[n][b]={v:v,n:sub.length}; all.push(v); }
     });
   });
+  // fallback: 当前指标无数据时自动切到线索量
+  var mgFallbackNote='';
+  if(!all.length && state.monthMetric!=='leads'){
+    state.monthMetric='leads';
+    m = M['leads'];
+    cells={}; all=[];
+    names.forEach(function(n){
+      cells[n]={};
+      BUCKETS.forEach(function(b){
+        var sub=byA[n].filter(function(s){ return s.bucket===b; });
+        if(!sub.length) return;
+        var v=m.f(agg(sub));
+        if(v!=null){ cells[n][b]={v:v,n:sub.length}; all.push(v); }
+      });
+    });
+    if(all.length) mgFallbackNote='<span style="color:var(--warn);font-weight:600">⚠ 原指标无有效数据，已自动切换为线索量</span>';
+  }
   if(!all.length){ $('#monthGrid').innerHTML='<div class="empty">该指标在当前筛选下无有效数据</div>'; return; }
 
   var mn=Math.min.apply(null,all), mx=Math.max.apply(null,all);
@@ -1458,7 +1595,7 @@ function renderMonthGrid(){
     return 'rgb('+Math.round(r)+','+Math.round(g)+','+Math.round(b)+')';
   }
 
-  var h='<div class="pyr-head"><span class="badge">主播 × 时段　'+m.t+'</span><span class="sub" style="font-size:10.5px">'+VIEW.length+' 场 · 当前窗口</span></div>'
+  var h='<div class="pyr-head"><span class="badge">主播 × 时段　'+m.t+'</span>'+mgFallbackNote+'<span class="sub" style="font-size:10.5px">'+VIEW.length+' 场 · 当前窗口</span></div>'
        +'<thead><tr><th class="rh-h">主播 \\ 时段</th>'
        +BUCKETS.map(function(b){ return '<th>'+b+'</th>'; }).join('')+'<th style="width:68px">合计</th></tr></thead><tbody>';
   names.forEach(function(n){
