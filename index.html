@@ -276,6 +276,182 @@ table.ctab tr.hl td{background:var(--panel2)}
 .funnel2>div{display:flex;flex-direction:column}
 .funnel2 .ch-h{margin-bottom:8px}
 @media(max-width:900px){.single-point .sp-grid{grid-template-columns:repeat(2,1fr)}}
+/* ===== 全局概览 3.0：浅色高级商务风 ===== */
+:root{--ov3-bg:#ffffff;--ov3-surface:#ffffff;--ov3-surface-2:#f8fafc;--ov3-border:#e2e8f0;--ov3-border-2:#f1f5f9;--ov3-tx:#0f172a;--ov3-tx2:#475569;--ov3-tx3:#94a3b8;--ov3-c1:#2563eb;--ov3-c2:#10b981;--ov3-c3:#f59e0b;--ov3-c4:#8b5cf6;--ov3-c5:#ef4444;--ov3-c6:#06b6d4;--ov3-up:#10b981;--ov3-down:#ef4444;--ov3-shadow:0 1px 3px rgba(15,23,42,.04),0 6px 24px rgba(15,23,42,.06);--ov3-shadow-hover:0 12px 40px rgba(15,23,42,.1);}
+
+#p-overview{padding:22px 0;color:var(--ov3-tx)}
+
+/* Bento Hero */
+.ov3-hero-bento{display:grid;grid-template-columns:1.25fr 1fr;gap:16px;margin-bottom:18px}
+.ov3-hero-main{position:relative;background:linear-gradient(135deg,#f0f9ff 0%,#e0f2fe 50%,#f5f3ff 100%);border:1px solid #dbeafe;border-radius:24px;padding:30px 34px;overflow:hidden;box-shadow:var(--ov3-shadow)}
+.ov3-hero-main::before{content:'';position:absolute;right:-60px;top:-60px;width:240px;height:240px;border-radius:50%;background:radial-gradient(circle,rgba(37,99,235,.12),transparent 70%)}
+.ov3-hero-main .eyebrow{font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#3b82f6;display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.ov3-hero-main .eyebrow::before{content:'';width:7px;height:7px;border-radius:50%;background:#10b981;box-shadow:0 0 0 3px rgba(16,185,129,.15)}
+.ov3-hero-main .big-num{font-size:58px;font-weight:800;line-height:1;letter-spacing:-2px;margin:8px 0 6px;color:#0f172a}
+.ov3-hero-main .big-num .unit{font-size:22px;font-weight:600;color:#64748b;margin-left:6px}
+.ov3-hero-main .big-label{font-size:14px;color:#475569;font-weight:500}
+.ov3-hero-main .hero-meta{display:flex;align-items:center;gap:12px;margin-top:14px;flex-wrap:wrap}
+.ov3-hero-main .delta{display:inline-flex;align-items:center;gap:4px;font-size:13px;font-weight:700;padding:5px 12px;border-radius:999px;background:#fff;border:1px solid #dcfce7;color:#10b981;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+.ov3-hero-main .delta.down{color:#ef4444;border-color:#fee2e2}
+.ov3-hero-main .target-pill{display:inline-flex;align-items:center;gap:8px;font-size:13px;color:#475569;background:#fff;padding:6px 14px;border-radius:999px;border:1px solid #e2e8f0}
+.ov3-hero-main .target-pill b{color:#2563eb;font-weight:700}
+.ov3-hero-main .target-bar-wrap{margin-top:20px}
+.ov3-hero-main .target-bar-label{display:flex;justify-content:space-between;font-size:12px;color:#475569;margin-bottom:8px}
+.ov3-hero-main .target-bar-label b{font-weight:700;color:#0f172a}
+.ov3-hero-main .target-bar{height:10px;background:#e2e8f0;border-radius:999px;overflow:hidden;position:relative}
+.ov3-hero-main .target-bar-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,#2563eb,#10b981);position:relative;transition:width 1s cubic-bezier(.22,1,.36,1)}
+.ov3-hero-main .target-bar-fill::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.35),transparent);animation:ov3-shimmer 2.5s infinite}
+@keyframes ov3-shimmer{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+.ov3-hero-main .hero-spark{margin-top:22px;height:60px}
+.ov3-hero-main .hero-spark svg{width:100%;height:100%}
+
+.ov3-hero-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.ov3-hcard{position:relative;background:#fff;border:1px solid var(--ov3-border);border-radius:20px;padding:20px 22px;box-shadow:var(--ov3-shadow);transition:transform .2s,box-shadow .2s,border-color .2s;overflow:hidden}
+.ov3-hcard:hover{transform:translateY(-2px);box-shadow:var(--ov3-shadow-hover);border-color:#cbd5e1}
+.ov3-hcard::after{content:'';position:absolute;right:-24px;bottom:-24px;width:100px;height:100px;border-radius:50%;background:var(--glow);opacity:.15;pointer-events:none}
+.ov3-hcard .top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px}
+.ov3-hcard .lab{font-size:12px;font-weight:600;color:#64748b}
+.ov3-hcard .icon{width:32px;height:32px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:14px;background:var(--icon-bg);color:var(--icon-c)}
+.ov3-hcard .val{font-size:30px;font-weight:800;color:#0f172a;line-height:1;letter-spacing:-.5px}
+.ov3-hcard .sub{font-size:12px;color:#64748b;margin-top:6px;font-weight:500}
+.ov3-hcard .mini{height:36px;margin-top:12px}
+.ov3-hcard .mini svg{width:100%;height:100%}
+
+/* Section title */
+.ov3-section-title{font-size:17px;font-weight:800;margin:28px 0 14px;display:flex;align-items:center;gap:10px;color:#0f172a}
+.ov3-section-title span{font-size:12px;color:#94a3b8;font-weight:500}
+
+/* Insights */
+.ov3-insights{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:6px}
+.ov3-icard{position:relative;background:#fff;border:1px solid var(--ov3-border);border-radius:18px;padding:20px;box-shadow:var(--ov3-shadow);transition:transform .2s,box-shadow .2s}
+.ov3-icard:hover{transform:translateY(-2px);box-shadow:var(--ov3-shadow-hover)}
+.ov3-icard::before{content:'';position:absolute;left:0;top:0;right:0;height:3px;background:var(--accent);border-radius:18px 18px 0 0}
+.ov3-icard .ih{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.ov3-icard .ih b{font-size:13px;font-weight:700;color:#0f172a}
+.ov3-icard .ih .tag{font-size:11px;font-weight:700;padding:3px 10px;border-radius:999px;background:var(--accent-bg);color:var(--accent)}
+.ov3-icard .inum{font-size:30px;font-weight:800;color:#0f172a;line-height:1;margin-bottom:4px}
+.ov3-icard .inum small{font-size:13px;font-weight:500;color:#64748b;margin-left:4px}
+.ov3-icard ul{margin:0;padding:0;list-style:none}
+.ov3-icard li{font-size:12.5px;line-height:1.65;color:#475569;padding:6px 0;border-bottom:1px solid #f1f5f9;display:flex;gap:8px}
+.ov3-icard li:last-child{border:0}
+.ov3-icard li i{font-style:normal;font-size:10px;width:18px;height:18px;border-radius:5px;display:flex;align-items:center;justify-content:center;color:#fff;background:var(--accent);flex-shrink:0;margin-top:1px}
+
+/* Target board */
+.ov3-target-board{display:grid;grid-template-columns:1fr 1.6fr;gap:16px;margin-bottom:18px}
+.ov3-team-target{position:relative;background:linear-gradient(135deg,#eff6ff 0%,#f0fdf4 100%);border:1px solid #dbeafe;border-radius:22px;padding:26px;box-shadow:var(--ov3-shadow);overflow:hidden}
+.ov3-team-target::before{content:'';position:absolute;right:-40px;top:-40px;width:180px;height:180px;border-radius:50%;background:radial-gradient(circle,rgba(37,99,235,.1),transparent 70%)}
+.ov3-team-target h3{font-size:15px;font-weight:800;margin:0 0 4px;color:#0f172a}
+.ov3-team-target .sub{color:#64748b;font-size:12px;margin-bottom:20px}
+.ov3-team-target .big{font-size:48px;font-weight:800;color:#0f172a;line-height:1}
+.ov3-team-target .big small{font-size:15px;font-weight:600;color:#64748b;margin-left:4px}
+.ov3-team-target .progress-wrap{margin:18px 0 10px}
+.ov3-team-target .progress-bar{height:14px;background:#e2e8f0;border-radius:999px;overflow:hidden}
+.ov3-team-target .progress-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,#2563eb,#10b981);position:relative}
+.ov3-team-target .progress-fill::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.4),transparent);animation:ov3-shimmer 2.5s infinite}
+.ov3-team-target .progress-meta{display:flex;justify-content:space-between;font-size:12px;color:#64748b;margin-top:8px}
+.ov3-team-target .progress-meta b{color:#0f172a}
+.ov3-team-target .context{display:flex;gap:16px;margin-top:18px}
+.ov3-team-target .ctx-item{flex:1;background:rgba(255,255,255,.7);border:1px solid #e2e8f0;border-radius:14px;padding:14px;text-align:center}
+.ov3-team-target .ctx-item .v{font-size:20px;font-weight:800;color:#0f172a}
+.ov3-team-target .ctx-item .l{font-size:11px;color:#64748b;margin-top:2px}
+
+.ov3-anchor-targets{background:#fff;border:1px solid var(--ov3-border);border-radius:22px;padding:22px;box-shadow:var(--ov3-shadow)}
+.ov3-anchor-targets h3{font-size:15px;font-weight:800;margin:0 0 4px;color:#0f172a}
+.ov3-anchor-targets .sub{color:#64748b;font-size:12px;margin-bottom:16px}
+.ov3-at-row{display:flex;align-items:center;gap:14px;padding:12px 0;border-bottom:1px solid #f1f5f9}
+.ov3-at-row:last-child{border:0}
+.ov3-at-row .rank{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;background:#f1f5f9;color:#64748b}
+.ov3-at-row.top1 .rank{background:#f59e0b;color:#fff}
+.ov3-at-row.top2 .rank{background:#94a3b8;color:#fff}
+.ov3-at-row.top3 .rank{background:#d6a068;color:#fff}
+.ov3-at-row .name{width:70px;font-size:13px;font-weight:700;color:#0f172a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ov3-at-row .bar-wrap{flex:1}
+.ov3-at-row .bar-track{height:10px;background:#f1f5f9;border-radius:999px;overflow:hidden;position:relative}
+.ov3-at-row .bar-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,#3b82f6,#10b981);transition:width .8s cubic-bezier(.22,1,.36,1)}
+.ov3-at-row .bar-fill.warn{background:linear-gradient(90deg,#f59e0b,#ef4444)}
+.ov3-at-row .meta{display:flex;justify-content:space-between;font-size:11.5px;color:#64748b;margin-top:5px}
+.ov3-at-row .meta b{color:#0f172a}
+.ov3-at-row .pct{font-size:16px;font-weight:800;color:#2563eb;min-width:52px;text-align:right}
+
+/* Trend chart card */
+.ov3-trend-card{background:#fff;border:1px solid var(--ov3-border);border-radius:22px;padding:22px 26px;box-shadow:var(--ov3-shadow);margin-bottom:18px}
+.ov3-trend-head{display:flex;align-items:center;gap:14px;margin-bottom:12px;flex-wrap:wrap}
+.ov3-trend-head h3{font-size:16px;font-weight:800;margin:0;color:#0f172a}
+.ov3-trend-head .sub{color:#94a3b8;font-size:12px}
+.ov3-trend-head .sp{flex:1}
+.ov3-trend-legend{display:flex;gap:10px;flex-wrap:wrap}
+.ov3-trend-legend .item{display:flex;align-items:center;gap:6px;font-size:12px;color:#475569;padding:5px 10px;border-radius:999px;background:#f8fafc;border:1px solid #e2e8f0;cursor:pointer;transition:all .2s}
+.ov3-trend-legend .item:hover{background:#f1f5f9}
+.ov3-trend-legend .item.off{opacity:.45}
+.ov3-trend-legend .item i{display:inline-block;width:10px;height:10px;border-radius:3px}
+#trendChart3 svg{width:100%;display:block}
+
+/* Tooltip */
+.ov3-tip{position:fixed;z-index:9999;background:rgba(255,255,255,.98);border:1px solid #e2e8f0;border-radius:14px;padding:14px 16px;font-size:12px;pointer-events:none;display:none;min-width:200px;box-shadow:0 20px 50px rgba(15,23,42,.15);backdrop-filter:blur(8px)}
+.ov3-tip .tt{font-weight:800;color:#0f172a;margin-bottom:10px;font-size:13px;border-bottom:1px solid #f1f5f9;padding-bottom:8px}
+.ov3-tip .tr{display:flex;align-items:center;gap:8px;padding:4px 0;color:#475569}
+.ov3-tip .tr i{width:8px;height:8px;border-radius:2px;flex-shrink:0}
+.ov3-tip .tr b{margin-left:auto;font-weight:700;color:#0f172a;font-variant-numeric:tabular-nums}
+
+/* Mid section */
+.ov3-mid{display:grid;grid-template-columns:1.25fr 1fr;gap:16px;margin-bottom:18px}
+.ov3-card{background:#fff;border:1px solid var(--ov3-border);border-radius:22px;padding:22px 26px;box-shadow:var(--ov3-shadow)}
+.ov3-card h3{font-size:15px;font-weight:800;margin:0 0 4px;color:#0f172a}
+.ov3-card .sub{color:#94a3b8;font-size:12px;margin-bottom:16px}
+
+.ov3-share-row{display:flex;align-items:center;gap:14px;margin-bottom:14px}
+.ov3-share-row .name{width:72px;font-size:13px;font-weight:700;color:#0f172a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ov3-share-row .bars{flex:1;display:flex;flex-direction:column;gap:5px}
+.ov3-share-row .bar-w{height:10px;background:#f1f5f9;border-radius:5px;overflow:hidden;position:relative}
+.ov3-share-row .bar{height:100%;border-radius:5px;position:relative;background:linear-gradient(90deg,var(--c),var(--c2))}
+.ov3-share-row .meta{display:flex;justify-content:space-between;font-size:11.5px;color:#64748b;margin-top:2px}
+.ov3-share-row .rank{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;background:#f1f5f9;border:1px solid #e2e8f0;color:#64748b}
+.ov3-share-row.top1 .rank{background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#fff;border:0}
+.ov3-share-row.top2 .rank{background:linear-gradient(135deg,#94a3b8,#64748b);color:#fff;border:0}
+.ov3-share-row.top3 .rank{background:linear-gradient(135deg,#d6a068,#b8763e);color:#fff;border:0}
+
+.ov3-funnel{display:flex;flex-direction:column;gap:10px}
+.ov3-fstep{position:relative}
+.ov3-fstep .fbar{height:46px;border-radius:10px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:15px;position:relative;overflow:hidden;box-shadow:inset 0 1px 0 rgba(255,255,255,.25)}
+.ov3-fstep .fbar::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,rgba(255,255,255,0),rgba(255,255,255,.15),rgba(255,255,255,0));transform:skewX(-20deg) translateX(-120%);transition:transform .6s}
+.ov3-fstep:hover .fbar::after{transform:skewX(-20deg) translateX(120%)}
+.ov3-fstep .flab{display:flex;justify-content:space-between;font-size:12px;color:#64748b;margin-top:6px}
+.ov3-farrow{height:20px;display:flex;align-items:center;justify-content:center;color:#94a3b8;font-size:11px;font-weight:700}
+.ov3-farrow .rate{color:#10b981}
+.ov3-farrow .drop{color:#ef4444}
+
+/* Radar grid */
+.ov3-radar-section{background:#fff;border:1px solid var(--ov3-border);border-radius:22px;padding:22px 26px;box-shadow:var(--ov3-shadow);margin-bottom:18px}
+.ov3-radar-section h3{font-size:15px;font-weight:800;margin:0 0 4px;color:#0f172a}
+.ov3-radar-section .sub{color:#94a3b8;font-size:12px;margin-bottom:18px}
+.ov3-radar-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.ov3-radar-card{background:#fff;border:1px solid var(--ov3-border);border-radius:18px;padding:18px;box-shadow:var(--ov3-shadow);transition:transform .2s,box-shadow .2s}
+.ov3-radar-card:hover{transform:translateY(-2px);box-shadow:var(--ov3-shadow-hover)}
+.ov3-radar-card .rh{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.ov3-radar-card .rh .dot{width:10px;height:10px;border-radius:50%;background:var(--c)}
+.ov3-radar-card .rh b{font-size:13px;font-weight:700;color:#0f172a}
+.ov3-radar-card .rh .score{margin-left:auto;font-size:18px;font-weight:800;color:#2563eb}
+.ov3-radar-card svg{width:100%;height:160px;display:block}
+.ov3-radar-card .dims{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.ov3-radar-card .dims span{font-size:10px;color:#64748b;background:#f8fafc;padding:3px 8px;border-radius:999px;border:1px solid #f1f5f9}
+
+@media(max-width:1200px){
+  .ov3-hero-bento{grid-template-columns:1fr}
+  .ov3-insights{grid-template-columns:repeat(2,1fr)}
+  .ov3-target-board{grid-template-columns:1fr}
+  .ov3-mid{grid-template-columns:1fr}
+  .ov3-radar-grid{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:768px){
+  #p-overview{padding:14px 0}
+  .ov3-hero-main{padding:22px;min-height:auto}
+  .ov3-hero-main .big-num{font-size:42px}
+  .ov3-hero-grid{grid-template-columns:1fr}
+  .ov3-insights{grid-template-columns:1fr}
+  .ov3-radar-grid{grid-template-columns:1fr}
+  .ov3-share-row .name{width:60px}
+}
+
 </style>
 
 <script>window.REMOTE_DATA_URL="data.json";window.SYNC_INTERVAL_MS=15*60*1000;</script>
@@ -369,26 +545,43 @@ window.__PRELOADED__={"meta": {"source": "飞书多维表格 · 迈科代理直�
   </div>
 
   <!-- 全局概览 -->
+  <!-- 全局概览 3.0 -->
   <div class="page on" id="p-overview">
-    <div class="kpis" id="kpis"></div>
-    <div class="alerts" id="alerts"></div>
-    <div class="digest" id="digest"></div>
-    <div class="card mb14">
-      <div class="card-h"><h3>每日趋势</h3><span class="sub" id="trendSub"></span><div class="sp"></div>
-        <div class="chips" id="trendMetric"></div>
-      </div>
-      <div class="card-b"><div id="trendChart"></div></div>
+    <div class="ov3-hero-bento">
+      <div id="ovHero3"></div>
+      <div class="ov3-hero-grid" id="ovHeroGrid3"></div>
     </div>
-    <div class="grid2">
-      <div class="card">
-        <div class="card-h"><h3>主播消耗 / 线索占比</h3></div>
-        <div class="card-b"><div id="shareChart"></div></div>
+
+    <div class="ov3-section-title">全局洞察 <span>数据自动提炼的优势、风险与行动建议</span></div>
+    <div class="ov3-insights" id="ovInsights3"></div>
+
+    <div class="ov3-section-title">目标完成度 <span>广州team目标 vs 主播个人目标</span></div>
+    <div class="ov3-target-board" id="ovTargetBoard3"></div>
+
+    <div class="ov3-trend-card">
+      <div class="ov3-trend-head">
+        <h3>全局趋势 · 多维指标关联</h3>
+        <span class="sub">点击图例可隐藏/显示 · 十字光标查看每日详情</span>
+        <div class="sp"></div>
+        <div class="ov3-trend-legend" id="trendLegend3"></div>
       </div>
-      <div class="card">
-        <div class="card-h"><h3>转化漏斗</h3><span class="sub">场观 → 点击 → 留资</span></div>
-        <div class="card-b"><div id="funnelChart"></div></div>
+      <div id="trendChart3"></div>
+    </div>
+
+    <div class="ov3-mid">
+      <div class="ov3-card">
+        <h3>主播贡献矩阵</h3>
+        <div class="sub">按线索贡献排名 · 进度条=线索量 · 下字=消耗 / CPL</div>
+        <div id="shareChart3"></div>
+      </div>
+      <div class="ov3-card">
+        <h3>转化漏斗</h3>
+        <div class="sub">场观 → 点击 → 留资 · 悬停查看转化/流失</div>
+        <div class="ov3-funnel" id="funnelChart3"></div>
       </div>
     </div>
+
+    <div id="ovRadar3"></div>
   </div>
 
   <!-- 主播分析 -->
@@ -639,242 +832,513 @@ var KPI_DEF = [
   { k:'cvr',   t:'小风车留资转化',c:'--c5', f:function(o){ return pct(o.cvr,1); } },
   { k:'mvr',   t:'评论留资转化',  c:'--c6', f:function(o){ return pct(o.mvr,1); } }
 ];
-function renderKPI(){
-  var cur=agg(VIEW), pre=agg(prevPeriod());
-  var byD={}; VIEW.forEach(function(s){ (byD[s.d]=byD[s.d]||[]).push(s); });
-  var dkeys=Object.keys(byD).sort();
-  var daily=dkeys.map(function(k){ return agg(byD[k]); });
-  var h='';
-  for(var i=0;i<KPI_DEF.length;i++){
-    var d=KPI_DEF[i], a=cur[d.k], b=pre[d.k], delta='';
-    if(a!=null && b!=null && b!==0){
-      var ch=(a-b)/Math.abs(b);
-      var good = d.rev ? ch<0 : ch>0;
-      var arrow = ch>0
-        ? '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="6 15 12 9 18 15"/></svg>'
-        : '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="6 9 12 15 18 9"/></svg>';
-      delta='<div class="d '+(good?'down':'up')+'">'+arrow+Math.abs(ch*100).toFixed(1)+'% <span style="color:var(--tx3)">较上期</span></div>';
-    } else {
-      delta='<div class="d">上期无数据</div>';
-    }
-    var sers=daily.map(function(a){ return a[d.k]; });
-    var sp=spark(sers);
-    h+='<div class="kpi" style="--k:var('+d.c+')"><div class="t">'+d.t+'</div><div class="v num">'+d.f(cur)+'</div>'+delta+(sp?'<div class="spark-w">'+sp+'</div>':'')+'</div>';
-  }
-  $('#kpis').innerHTML=h;
+/* ===== 全局概览 3.0：浅色商务风 + 目标完成度 ===== */
+function dateDiff(a,b){
+  if(!a||!b) return 0;
+  return Math.round((new Date(b)-new Date(a))/864e5);
 }
 
-/* ==================== 预警 ==================== */
-function renderAlerts(){
-  var o=agg(VIEW);
-  var byA={};
-  VIEW.forEach(function(s){ (byA[s.a]=byA[s.a]||[]).push(s); });
-  var rows=[];
-  for(var k in byA){
-    var a=agg(byA[k]);
-    if(a.n>=3) rows.push({name:k,a:a});
-  }
-  var teamCpl=o.cpl, teamLph=o.lph;
-  var out=[];
-  var ico={
-    r:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
-    y:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>',
-    g:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>'
-  };
-  // 成本超标
-  if(teamCpl){
-    rows.forEach(function(r){
-      if(r.a.cpl==null) return;
-      var d=(r.a.cpl-teamCpl)/teamCpl;
-      if(d>=0.5) out.push({t:'r',h:'<b>'+esc(r.name)+'</b> 单线索成本 ¥'+fmt(r.a.cpl,0)+'，高于团队均值 <b>'+(d*100).toFixed(0)+'%</b>（团队 ¥'+fmt(teamCpl,0)+'，'+r.a.n+' 场）'});
-      else if(d>=0.2) out.push({t:'y',h:'<b>'+esc(r.name)+'</b> 单线索成本 ¥'+fmt(r.a.cpl,0)+'，高于团队均值 '+(d*100).toFixed(0)+'%'});
-    });
-  }
-  // 产量优异
-  if(teamLph){
-    rows.forEach(function(r){
-      if(r.a.lph==null) return;
-      var d=(r.a.lph-teamLph)/teamLph;
-      if(d>=0.3) out.push({t:'g',h:'<b>'+esc(r.name)+'</b> 小时产量 '+fmt(r.a.lph,2)+' 条/h，高于团队均值 <b>'+(d*100).toFixed(0)+'%</b>，可复制其打法'});
-    });
-  }
-  // 零线索场次
-  var zero=VIEW.filter(function(s){ return s.l===0 && s.c>200; });
-  if(zero.length) out.push({t:'y',h:'有 <b>'+zero.length+'</b> 场消耗 &gt;¥200 但零线索，累计浪费 <b>¥'+fmtK(zero.reduce(function(a,b){return a+b.cost;},0))+'</b>'});
 
-  out.sort(function(a,b){ return ({r:0,y:1,g:2})[a.t]-({r:0,y:1,g:2})[b.t]; });
-  out=out.slice(0,6);
-  $('#alerts').innerHTML = out.length
-    ? out.map(function(x){ return '<div class="alert '+x.t+'">'+ico[x.t]+'<div>'+x.h+'</div></div>'; }).join('')
-    : '<div class="alert g">'+ico.g+'<div>当前筛选范围内未发现明显异常</div></div>';
+/* ---------- 目标数据：优先从 DATA.targets 读取，回退到硬编码 ---------- */
+var TARGET_DATA = { team: {}, anchors: {} };
+function loadTargetsFromData(){
+  if(!DATA || !DATA.targets) return;
+  TARGET_DATA = { team: {}, anchors: {} };
+  var months=Object.keys(DATA.targets).sort();
+  months.forEach(function(ym){
+    var tg=DATA.targets[ym];
+    var teamLeads=0;
+    for(var a in tg){ if(typeof tg[a]==='number'){ teamLeads+=tg[a]; TARGET_DATA.anchors[a]=TARGET_DATA.anchors[a]||{}; TARGET_DATA.anchors[a][ym]={leads:tg[a]}; } }
+    TARGET_DATA.team[ym]={leads:teamLeads, note:"广州team月度获客目标"};
+  });
+}
+function getCurrentMonth(){ return state.d2 ? state.d2.slice(0,7) : DATA.meta.dateMax.slice(0,7); }
+function getTargetForMonth(ym){ return TARGET_DATA.team[ym] || TARGET_DATA.team[Object.keys(TARGET_DATA.team).sort().pop()] || {leads:0,note:"暂无目标"}; }
+function getAnchorTarget(a, ym){ var am=TARGET_DATA.anchors[a]; return am ? (am[ym] || am[Object.keys(am).sort().pop()]) : null; }
+function monthDaysLeft(ym, currentDate){
+  if(!currentDate) return 0;
+  var parts=ym.split('-');
+  var y=parseInt(parts[0]), m=parseInt(parts[1]);
+  var last=new Date(y,m,0);
+  var cur=new Date(currentDate);
+  return Math.max(0, Math.round((last-cur)/864e5));
 }
 
-/* ==================== 数据摘录 ==================== */
-function renderDigest(){
-  var o=agg(VIEW);
-  if(!VIEW.length){ $('#digest').innerHTML='<h4>数据摘录</h4><ul><li>当前范围无数据</li></ul>'; return; }
-  var byA={}; VIEW.forEach(function(s){ (byA[s.a]=byA[s.a]||[]).push(s); });
-  var arr=[]; for(var k in byA){ var a=agg(byA[k]); if(a.n>=2) arr.push({name:k,a:a}); }
 
-  var topLeads=arr.slice().sort(function(x,y){ return y.a.leads-x.a.leads; })[0];
-  var bestLph =arr.filter(function(x){return x.a.lph!=null;}).sort(function(x,y){ return y.a.lph-x.a.lph; })[0];
-  var bestCpl =arr.filter(function(x){return x.a.cpl!=null;}).sort(function(x,y){ return x.a.cpl-y.a.cpl; })[0];
-
-  var byB={}; VIEW.forEach(function(s){ (byB[s.bucket]=byB[s.bucket]||[]).push(s); });
-  var bArr=[]; for(var b in byB){ var ba=agg(byB[b]); if(ba.n>=3) bArr.push({name:b,a:ba}); }
-  var bestB=bArr.filter(function(x){return x.a.lph!=null;}).sort(function(x,y){ return y.a.lph-x.a.lph; })[0];
-
-  var byD={}; VIEW.forEach(function(s){ byD[s.d]=(byD[s.d]||0)+(s.l||0); });
-  var dk=Object.keys(byD).sort(function(a,b){ return byD[b]-byD[a]; });
-  var days=Object.keys(byD).length;
-
-  var li=[];
-  li.push('区间内共 <b>'+fmt(o.n)+'</b> 场直播，覆盖 <b>'+days+'</b> 天，'+
-          '总消耗 <b>¥'+fmtK(o.cost)+'</b>，收获线索 <b>'+fmt(o.leads)+'</b> 条，'+
-          '综合单线索成本 <b>¥'+fmt(o.cpl,0)+'</b>');
-  li.push('累计计费 <b>'+fmt(o.billH,1)+'</b> 小时，团队平均小时产量 <b>'+fmt(o.lph,2)+'</b> 条/h，'+
-          '小时消耗 <b>¥'+fmt(o.cph,0)+'</b>/h');
-  if(topLeads) li.push('线索贡献冠军：<span class="good">'+esc(topLeads.name)+'</span> '+fmt(topLeads.a.leads)+' 条'+
-          '（占全队 '+pct(div(topLeads.a.leads,o.leads))+'，'+topLeads.a.n+' 场）');
-  if(bestLph) li.push('产能最强：<span class="good">'+esc(bestLph.name)+'</span> '+fmt(bestLph.a.lph,2)+' 条/h'+
-          (bestCpl?('　｜　成本最优：<span class="good">'+esc(bestCpl.name)+'</span> ¥'+fmt(bestCpl.a.cpl,0)+'/条'):''));
-  if(bestB) li.push('最佳开播时段：<b>'+esc(bestB.name)+'</b>，小时产量 '+fmt(bestB.a.lph,2)+' 条/h，'+
-          '单线索成本 ¥'+fmt(bestB.a.cpl,0)+'（'+bestB.a.n+' 场）');
-  if(dk.length) li.push('单日峰值：<b>'+dk[0]+'</b> 收获 '+fmt(byD[dk[0]])+' 条线索');
-  if(o.ctr!=null) li.push('转化链路：小风车点击率 <b>'+pct(o.ctr,2)+'</b> → 点击留资转化 <b>'+pct(o.cvr,1)+'</b>，'+
-          '评论留资转化 <b>'+pct(o.mvr,1)+'</b>');
-
-  $('#digest').innerHTML='<h4><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>数据摘录</h4><ul>'+li.map(function(x){return '<li>'+x+'</li>';}).join('')+'</ul>';
+/* ---------- 高级 Sparkline（带渐变、发光点、悬停 tooltip） ---------- */
+function spark3(series, color, opts){
+  opts=opts||{}; var W=opts.width||320, H=opts.height||40, pts=[];
+  for(var i=0;i<series.length;i++){ if(series[i]!=null) pts.push(series[i]); }
+  if(pts.length<2) return '<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none"><text x="'+W/2+'" y="'+H/2+'" text-anchor="middle" fill="#94a3b8" font-size="10">暂无趋势</text></svg>';
+  var mn=Math.min.apply(null,pts), mx=Math.max.apply(null,pts), rng=(mx-mn)||1;
+  var n=series.length, step=n>1?(W-12)/(n-1):0;
+  var X=function(i){return 6+i*step}, Y=function(v){return H-6-((v-mn)/rng)*(H-12)};
+  var d='M', area='M';
+  for(var i=0;i<n;i++){
+    if(series[i]==null) continue;
+    var x=X(i).toFixed(1), y=Y(series[i]).toFixed(1);
+    d+=(i===0?'':'L')+x+' '+y;
+    area+=(i===0?'':'L')+x+' '+y;
+  }
+  area+='L'+(W-6).toFixed(1)+' '+(H-6).toFixed(1)+'L6 '+(H-6).toFixed(1)+'Z';
+  var lastIdx=n-1; while(lastIdx>=0 && series[lastIdx]==null) lastIdx--;
+  var lastDot='';
+  if(lastIdx>=0){
+    lastDot='<circle cx="'+X(lastIdx).toFixed(1)+'" cy="'+Y(series[lastIdx]).toFixed(1)+'" r="3.5" fill="'+color+'" stroke="#fff" stroke-width="2" filter="drop-shadow(0 0 4px '+color+')"/>';
+  }
+  return '<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none">'+
+    '<defs><linearGradient id="g'+color.replace('#','')+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="'+color+'" stop-opacity=".22"/><stop offset="1" stop-color="'+color+'" stop-opacity="0"/></linearGradient></defs>'+
+    '<path d="'+area+'" fill="url(#g'+color.replace('#','')+')"/>'+
+    '<path d="'+d+'" fill="none" stroke="'+color+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>'+
+    lastDot+'</svg>';
 }
 
-/* ==================== 趋势图 ==================== */
-var TREND_M=[
-  {k:'leads',t:'线索量',f:function(o){return o.leads;},fmt:function(v){return fmt(v);}},
-  {k:'cost',t:'消耗',f:function(o){return o.cost;},fmt:function(v){return '¥'+fmtK(v);}},
-  {k:'cpl',t:'单线索成本',f:function(o){return o.cpl;},fmt:function(v){return v==null?'—':'¥'+fmt(v,0);}},
-  {k:'lph',t:'小时产量',f:function(o){return o.lph;},fmt:function(v){return v==null?'—':fmt(v,2);}}
-];
-function renderTrend(){
-  var byD={};
-  VIEW.forEach(function(s){ (byD[s.d]=byD[s.d]||[]).push(s); });
+/* ---------- Hero Bento ---------- */
+function renderHero3(){
+  loadTargetsFromData();
+  var cur=getCurrentMonth();
+  var target=getTargetForMonth(cur);
+  var total=VIEW.reduce(function(s,x){return s+x.leads;},0);
+  var prev=prevPeriod(VIEW);
+  var prevTotal=prev.reduce(function(s,x){return s+x.leads;},0);
+  var delta=prevTotal?((total-prevTotal)/prevTotal*100):0;
+  var pct=target?Math.min(100,total/target.leads*100):0;
+  var remain=target?Math.max(0,target.leads-total):0;
+  var daysSpan=Math.max(1,dateDiff(state.d1||DATA.meta.dateMin, state.d2||DATA.meta.dateMax));
+  var perDay=total/daysSpan;
+  var sessions=VIEW.length;
+  var hours=VIEW.reduce(function(s,x){return s+(x.durMin||60);},0)/60;
+  var lph=hours?total/hours:0;
+
+  // 每日线索量趋势
+  var byD={}; VIEW.forEach(function(s){(byD[s.d]=byD[s.d]||[]).push(s);});
   var dates=Object.keys(byD).sort();
-  var m=TREND_M.filter(function(x){return x.k===state.trend;})[0];
-  $('#trendSub').textContent = dates.length? (dates.length+' 天'):'';
+  var series=dates.map(function(d){return byD[d].reduce(function(s,x){return s+x.leads;},0);});
 
-  if(dates.length<2){ $('#trendChart').innerHTML='<div class="empty">数据不足，无法绘制趋势</div>'; return; }
-  // 超过 90 天按周聚合
-  var agK=[], agV=[], mode='日';
+  $('#ovHero3').innerHTML =
+    '<div class="ov3-hero-main">'+
+      '<div class="eyebrow">全局数据总览 · '+state.d1+' ~ '+state.d2+'</div>'+
+      '<div class="big-label">总线索量（条）</div>'+
+      '<div class="big-num">'+fmt(total)+'<span class="unit">条</span></div>'+
+      '<div class="hero-meta">'+
+        '<span class="delta '+(delta>=0?'':'down')+'">'+(delta>=0?'▲':'▼')+' '+Math.abs(delta).toFixed(1)+'% <i>较上期</i></span>'+
+        '<span class="target-pill">目标 <b>'+(target?fmt(target.leads):'—')+'</b> 条 · 剩余 <b>'+fmt(remain)+'</b> 条</span>'+
+      '</div>'+
+      '<div class="target-bar-wrap">'+
+        '<div class="target-bar-label"><span>目标完成度</span><b>'+pct.toFixed(1)+'%</b></div>'+
+        '<div class="target-bar"><div class="target-bar-fill" style="width:'+pct+'%"></div></div>'+
+      '</div>'+
+      '<div class="hero-spark">'+spark3(series,'#2563eb')+'</div>'+
+    '</div>';
+}
+
+function renderHeroGrid3(){
+  var cur=getCurrentMonth();
+  var target=getTargetForMonth(cur);
+  var totalCost=VIEW.reduce(function(s,x){return s+x.cost;},0);
+  var totalLeads=VIEW.reduce(function(s,x){return s+x.leads;},0);
+  var cpl=totalLeads?totalCost/totalLeads:0;
+  var sessions=VIEW.length;
+  var clicks=VIEW.reduce(function(s,x){return s+x.clicks;},0);
+  var cr=clicks?totalLeads/clicks*100:0;
+
+  // 各指标趋势序列
+  var byD={}; VIEW.forEach(function(s){(byD[s.d]=byD[s.d]||[]).push(s);});
+  var dates=Object.keys(byD).sort();
+  var costS=dates.map(function(d){return byD[d].reduce(function(s,x){return s+x.cost;},0);});
+  var cplS=dates.map(function(d){var g=agg(byD[d]); return g.leads?g.cost/g.leads:null;});
+  var sessS=dates.map(function(d){return byD[d].length;});
+  var crS=dates.map(function(d){var g=agg(byD[d]); return g.clicks?g.leads/g.clicks*100:null;});
+
+  var cards=[
+    {lab:'总消耗', val:'¥'+fmtK(totalCost), sub:'投入规模', icon:'💰', bg:'#eff6ff', c:'#2563eb', glow:'rgba(37,99,235,.2)', s:costS, sc:'#2563eb'},
+    {lab:'单线索成本', val:'¥'+fmt(cpl,0), sub:'成本效率', icon:'⚡', bg:'#fef3c7', c:'#d97706', glow:'rgba(217,119,6,.2)', s:cplS, sc:'#f59e0b'},
+    {lab:'直播场次', val:fmt(sessions), sub:'覆盖 '+fmt(dateDiff(state.d1,state.d2)+1)+' 天', icon:'🎥', bg:'#ecfdf5', c:'#059669', glow:'rgba(5,150,105,.2)', s:sessS, sc:'#10b981'},
+    {lab:'留资转化', val:cr.toFixed(1)+'%', sub:'点击 → 留资', icon:'🎯', bg:'#f5f3ff', c:'#7c3aed', glow:'rgba(124,58,237,.2)', s:crS, sc:'#8b5cf6'}
+  ];
+  $('#ovHeroGrid3').innerHTML = cards.map(function(c){
+    return '<div class="ov3-hcard" style="--glow:'+c.glow+'">'+
+      '<div class="top"><div class="lab">'+c.lab+'</div><div class="icon" style="--icon-bg:'+c.bg+';--icon-c:'+c.c+'">'+c.icon+'</div></div>'+
+      '<div class="val">'+c.val+'</div>'+
+      '<div class="sub">'+c.sub+'</div>'+
+      '<div class="mini">'+spark3(c.s,c.sc)+'</div>'+
+    '</div>';
+  }).join('');
+}
+
+/* ---------- 全局洞察 ---------- */
+function renderInsights3(){
+  var insights=computeInsights(VIEW);
+  var cards=[
+    {name:'核心战果', accent:'#2563eb', accentBg:'#eff6ff', icon:'★',
+     value:insights.top?insights.top.leads:0, unit:'条', suffix:insights.top?'由 '+insights.top.name+' 贡献':'—',
+     list:insights.highlights.slice(0,3)},
+    {name:'效率标杆', accent:'#10b981', accentBg:'#ecfdf5', icon:'✓',
+     value:insights.bestCpl?fmt(insights.bestCpl.cpl,0):'—', unit:insights.bestCpl?'¥/条':'', suffix:insights.bestCpl?insights.bestCpl.name+' 单线索成本最优':'—',
+     list:insights.efficiency.slice(0,3)},
+    {name:'风险预警', accent:'#ef4444', accentBg:'#fef2f2', icon:'!',
+     value:insights.warnings.length, unit:'项', suffix:'需关注',
+     list:insights.warnings.slice(0,3).map(function(w){return {text:w};})},
+    {name:'行动建议', accent:'#8b5cf6', accentBg:'#f5f3ff', icon:'→',
+     value:insights.actions.length, unit:'条', suffix:'优化方向',
+     list:insights.actions.slice(0,3).map(function(a){return {text:a};})}
+  ];
+  $('#ovInsights3').innerHTML = cards.map(function(c,i){
+    return '<div class="ov3-icard" style="--accent:'+c.accent+';--accent-bg:'+c.accentBg+'">'+
+      '<div class="ih"><b>'+c.name+'</b><span class="tag">'+c.icon+'</span></div>'+
+      '<div class="inum">'+(typeof c.value==='number'?fmt(c.value):c.value)+'<small>'+c.unit+'</small></div>'+
+      '<div style="font-size:12px;color:#64748b;margin-bottom:10px">'+c.suffix+'</div>'+
+      '<ul>'+c.list.map(function(it){return '<li><i>'+c.icon+'</i><span>'+it.text+'</span></li>';}).join('')+'</ul>'+
+    '</div>';
+  }).join('');
+}
+
+function computeInsights(rows){
+  var byA={}, totalLeads=0, totalCost=0, totalHours=0;
+  rows.forEach(function(s){
+    var a=s.a||s.anchor;
+    byA[a]=byA[a]||{name:a,leads:0,cost:0,hours:0,sessions:0};
+    byA[a].leads+=s.leads||0; byA[a].cost+=s.cost||0; byA[a].hours+=(s.durMin||60)/60; byA[a].sessions++;
+    totalLeads+=s.leads||0; totalCost+=s.cost||0; totalHours+=(s.durMin||60)/60;
+  });
+  var anchors=Object.values(byA);
+  anchors.forEach(function(a){ a.cpl=a.leads?a.cost/a.leads:Infinity; a.lph=a.hours?a.leads/a.hours:0; });
+  var sortedByLeads=anchors.slice().sort(function(a,b){return b.leads-a.leads;});
+  var sortedByCpl=anchors.filter(function(a){return a.leads>=3;}).sort(function(a,b){return a.cpl-b.cpl;});
+  var warnings=[], actions=[], highlights=[], efficiency=[];
+
+  sortedByLeads.slice(0,3).forEach(function(a,i){
+    highlights.push({text:(i+1)+'. <b>'+a.name+'</b> 贡献 '+fmt(a.leads)+' 条（'+pct(a.leads/totalLeads,1)+'）'});
+  });
+  sortedByCpl.slice(0,3).forEach(function(a,i){
+    efficiency.push({text:(i+1)+'. <b>'+a.name+'</b> ¥'+fmt(a.cpl,0)+'/条 · '+fmt(a.lph,1)+' 条/h'});
+  });
+  anchors.forEach(function(a){
+    if(a.leads===0 && a.sessions>=2) warnings.push('<b>'+a.name+'</b> '+a.sessions+' 场直播零线索，建议复盘素材/话术');
+    if(a.cpl>500 && a.leads>=3) warnings.push('<b>'+a.name+'</b> 单线索成本 ¥'+fmt(a.cpl,0)+'，高于团队均值');
+    if(a.lph<2 && a.sessions>=3) warnings.push('<b>'+a.name+'</b> 小时产量 '+fmt(a.lph,1)+' 条/h，效率偏低');
+  });
+  if(totalHours && totalLeads/totalHours<3) actions.push('整体小时产量 '+fmt(totalLeads/totalHours,1)+' 条/h，建议优化直播节奏与钩子');
+  actions.push('重点关注 <b>'+(sortedByLeads[0]?sortedByLeads[0].name:'—')+'</b> 的爆款模型复制');
+  if(sortedByCpl[0]) actions.push('学习 <b>'+sortedByCpl[0].name+'</b> 的成本控制策略');
+  return {top:sortedByLeads[0], bestCpl:sortedByCpl[0], highlights:highlights, efficiency:efficiency, warnings:warnings, actions:actions};
+}
+
+/* ---------- 目标完成度看板 ---------- */
+function renderTargetBoard3(){
+  var cur=getCurrentMonth();
+  var t=getTargetForMonth(cur);
+  var totalLeads=VIEW.reduce(function(s,x){return s+x.leads;},0);
+  var pct=t?Math.min(100,totalLeads/t.leads*100):0;
+  var remain=t?Math.max(0,t.leads-totalLeads):0;
+  var daysLeft=Math.max(0,monthDaysLeft(cur, state.d2));
+  var needPerDay=remain>0 && daysLeft>0?remain/daysLeft:0;
+  var byA={}; VIEW.forEach(function(s){var a=s.a||s.anchor; byA[a]=(byA[a]||0)+(s.leads||0);});
+  var rows=Object.keys(byA).map(function(a){return {name:a,actual:byA[a],target:getAnchorTarget(a,cur)};});
+  rows.sort(function(a,b){return (b.target?b.actual/b.target.leads:0)-(a.target?a.actual/a.target.leads:0);});
+
+  $('#ovTargetBoard3').innerHTML =
+    '<div class="ov3-team-target">'+
+      '<h3>广州 Team 目标进度</h3>'+
+      '<div class="sub">'+cur+' · '+(t?t.note:'月度目标')+'</div>'+
+      '<div class="big">'+(t?fmt(t.leads):'—')+'<small>条目标</small></div>'+
+      '<div class="progress-wrap"><div class="progress-bar"><div class="progress-fill" style="width:'+pct+'%"></div></div></div>'+
+      '<div class="progress-meta"><span>已完成 <b>'+fmt(totalLeads)+'</b> 条</span><span>剩余 <b>'+fmt(remain)+'</b> 条</span></div>'+
+      '<div class="context">'+
+        '<div class="ctx-item"><div class="v">'+pct.toFixed(1)+'%</div><div class="l">完成度</div></div>'+
+        '<div class="ctx-item"><div class="v">'+fmt(remain)+'</div><div class="l">剩余线索</div></div>'+
+        '<div class="ctx-item"><div class="v">'+(needPerDay?fmt(needPerDay,0):'—')+'</div><div class="l">日均需完成</div></div>'+
+      '</div>'+
+    '</div>'+
+    '<div class="ov3-anchor-targets">'+
+      '<h3>主播目标完成度</h3>'+
+      '<div class="sub">按完成率排序 · 基于 '+cur+' 目标</div>'+
+      rows.slice(0,8).map(function(r,i){
+        var p=r.target?Math.min(100,r.actual/r.target.leads*100):0;
+        return '<div class="ov3-at-row '+(i===0?'top1':(i===1?'top2':(i===2?'top3':'')))+'">'+
+          '<div class="rank">'+(i+1)+'</div>'+
+          '<div class="name">'+r.name+'</div>'+
+          '<div class="bar-wrap">'+
+            '<div class="bar-track"><div class="bar-fill '+(p<30?'warn':'')+'" style="width:'+p+'%"></div></div>'+
+            '<div class="meta"><span>已获 <b>'+fmt(r.actual)+'</b> 条</span><span>目标 <b>'+(r.target?fmt(r.target.leads):'—')+'</b> 条</span></div>'+
+          '</div>'+
+          '<div class="pct">'+p.toFixed(0)+'%</div>'+
+        '</div>';
+      }).join('')+
+    '</div>';
+}
+
+/* ---------- 多维度趋势图 ---------- */
+var TREND3_SERIES=[
+  {k:'leads',label:'线索量',color:'#2563eb',axis:'left',type:'bar',fmt:function(v){return fmt(v)+' 条';},f:function(g){return g.leads;}},
+  {k:'cost',label:'消耗',color:'#10b981',axis:'left',type:'line',fmt:function(v){return '¥'+fmtK(v);},f:function(g){return g.cost;}},
+  {k:'cpl',label:'单线索成本',color:'#f59e0b',axis:'right',type:'line',fmt:function(v){return '¥'+fmt(v,0);},f:function(g){return g.leads?g.cost/g.leads:null;}},
+  {k:'lph',label:'小时产量',color:'#8b5cf6',axis:'right',type:'line',fmt:function(v){return fmt(v,1)+' 条/h';},f:function(g){var h=g.durMin?g.durMin/60:g.sessions; return h?g.leads/h:null;}},
+  {k:'views',label:'场观人数',color:'#06b6d4',axis:'right',type:'line',fmt:function(v){return fmt(v);},f:function(g){return g.views;}},
+  {k:'clicks',label:'小风车点击',color:'#ef4444',axis:'right',type:'line',fmt:function(v){return fmt(v);},f:function(g){return g.clicks;}}
+];
+var trend3Active=['leads','cost','cpl','lph'];
+
+function renderTrend3(){
+  var byD={}; VIEW.forEach(function(s){(byD[s.d]=byD[s.d]||[]).push(s);});
+  var dates=Object.keys(byD).sort();
+  if(dates.length<2){ $('#trendChart3').innerHTML='<div class="empty">数据不足，无法绘制趋势</div>'; return; }
+  // 超过90天按周聚合
+  var agK=dates, agV=dates.map(function(d){return byD[d];}), mode='日';
   if(dates.length>92){
-    mode='周';
-    var wk={};
+    mode='周'; var wk={};
     dates.forEach(function(d){
       var dt=new Date(d), day=(dt.getDay()+6)%7;
       var mon=new Date(dt.getTime()-day*864e5).toISOString().slice(0,10);
       (wk[mon]=wk[mon]||[]).push.apply(wk[mon], byD[d]);
     });
-    agK=Object.keys(wk).sort(); agK.forEach(function(k){ agV.push(m.f(agg(wk[k]))); });
-  } else {
-    agK=dates; dates.forEach(function(d){ agV.push(m.f(agg(byD[d]))); });
+    agK=Object.keys(wk).sort(); agV=agK.map(function(k){return wk[k];});
   }
-  var W=1000,H=300,pl=62,pr=18,pt=18,pb=42;
+  var W=1100,H=360,pl=62,pr=52,pt=20,pb=52;
   var iw=W-pl-pr, ih=H-pt-pb;
-  var valid=agV.filter(function(v){return v!=null;});
-  if(!valid.length){ $('#trendChart').innerHTML='<div class="empty">该指标在当前范围内无有效数据</div>'; return; }
-  var mx=Math.max.apply(null,valid), mn=Math.min.apply(null,valid);
-  if(mx===mn){ mx=mx*1.2+1; mn=Math.max(0,mn*0.8-1); }
-  var pad=(mx-mn)*0.12; mx+=pad; mn=Math.max(0,mn-pad);
-  var X=function(i){ return pl+(agK.length<2?iw/2:i*iw/(agK.length-1)); };
-  var Y=function(v){ return pt+ih-((v-mn)/(mx-mn))*ih; };
 
-  var g='';
+  var series=TREND3_SERIES.filter(function(s){return trend3Active.indexOf(s.k)>=0;});
+  var data=series.map(function(s){
+    return {k:s.k,label:s.label,color:s.color,axis:s.axis,type:s.type,fmt:s.fmt,values:agV.map(function(rows){return s.f(agg(rows));})};
+  });
+
+  // 计算左右轴范围
+  var leftVals=[], rightVals=[];
+  data.forEach(function(s){
+    s.values.forEach(function(v){ if(v!=null){ if(s.axis==='left') leftVals.push(v); else rightVals.push(v); } });
+  });
+  var leftR=rangeWithPad(leftVals), rightR=rangeWithPad(rightVals);
+
+  var X=function(i){return pl+(agK.length<2?iw/2:i*iw/(agK.length-1));};
+  var YL=function(v){return pt+ih-((v-leftR.min)/(leftR.max-leftR.min||1))*ih;};
+  var YR=function(v){return pt+ih-((v-rightR.min)/(rightR.max-rightR.min||1))*ih;};
+
+  var svg='<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="xMidYMid meet">';
+  // 网格
   for(var i=0;i<=4;i++){
-    var y=pt+ih*i/4, v=mx-(mx-mn)*i/4;
-    g+='<line x1="'+pl+'" y1="'+y.toFixed(1)+'" x2="'+(W-pr)+'" y2="'+y.toFixed(1)+'" stroke="var(--line)" stroke-width="1"'+(i<4?' stroke-dasharray="3 4"':'')+'/>';
-    g+='<text x="'+(pl-9)+'" y="'+(y+4).toFixed(1)+'" text-anchor="end" font-size="11" fill="var(--tx3)">'+m.fmt(v).replace('¥','')+'</text>';
-  }
-  // 折线（跳过 null）
-  var segs=[], cur=[];
-  agV.forEach(function(v,i){ if(v==null){ if(cur.length)segs.push(cur); cur=[]; } else cur.push([X(i),Y(v)]); });
-  if(cur.length) segs.push(cur);
-  var path=segs.map(function(sg){ return 'M'+sg.map(function(p){return p[0].toFixed(1)+' '+p[1].toFixed(1);}).join('L'); }).join(' ');
-  var area='';
-  if(segs.length===1&&segs[0].length>1){
-    var sg=segs[0];
-    area='<path d="M'+sg.map(function(p){return p[0].toFixed(1)+' '+p[1].toFixed(1);}).join('L')+'L'+sg[sg.length-1][0].toFixed(1)+' '+(pt+ih)+'L'+sg[0][0].toFixed(1)+' '+(pt+ih)+'Z" fill="url(#tg)"/>';
-  }
-  var dots='';
-  var step=Math.max(1,Math.ceil(agK.length/60));
-  agV.forEach(function(v,i){
-    if(v==null||i%step) return;
-    dots+='<circle cx="'+X(i).toFixed(1)+'" cy="'+Y(v).toFixed(1)+'" r="2.8" fill="var(--panel)" stroke="var(--pri)" stroke-width="2"><title>'+agK[i]+'　'+m.t+'：'+m.fmt(v)+'</title></circle>';
-  });
-  var lb='', ls=Math.max(1,Math.ceil(agK.length/9));
-  agK.forEach(function(k,i){
-    if(i%ls && i!==agK.length-1) return;
-    lb+='<text x="'+X(i).toFixed(1)+'" y="'+(H-16)+'" text-anchor="middle" font-size="11" fill="var(--tx3)">'+k.slice(5)+'</text>';
-  });
-  $('#trendChart').innerHTML = svgEl('0 0 '+W+' '+H,320)+
-    '<defs><linearGradient id="tg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--pri)" stop-opacity=".22"/><stop offset="1" stop-color="var(--pri)" stop-opacity="0"/></linearGradient></defs>'+
-    g+area+'<path d="'+path+'" fill="none" stroke="var(--pri)" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>'+dots+lb+
-    '<text x="'+(W-pr)+'" y="'+(H-3)+'" text-anchor="end" font-size="10" fill="var(--tx3)">按'+mode+'聚合</text></svg>';
-}
-
-/* ==================== 占比图 ==================== */
-function renderShare(){
-  var byA={}; VIEW.forEach(function(s){ (byA[s.a]=byA[s.a]||[]).push(s); });
-  var arr=[]; for(var k in byA){ var a=agg(byA[k]); arr.push({name:k,cost:a.cost,leads:a.leads,cpl:a.cpl}); }
-  arr.sort(function(x,y){ return y.cost-x.cost; });
-  if(arr.length>8){
-    var rest=arr.slice(7), o={name:'其他 '+rest.length+' 人',cost:0,leads:0};
-    rest.forEach(function(r){ o.cost+=r.cost; o.leads+=r.leads; });
-    o.cpl=div(o.cost,o.leads); arr=arr.slice(0,7).concat([o]);
-  }
-  if(!arr.length){ $('#shareChart').innerHTML='<div class="empty">无数据</div>'; return; }
-  var tc=arr.reduce(function(a,b){return a+b.cost;},0);
-  var tl=arr.reduce(function(a,b){return a+b.leads;},0);
-  var W=1000,H=Math.max(150,arr.length*44+24),bw=W-250;
-  var h='';
-  arr.forEach(function(r,i){
-    var y=i*44+10, c=colorOf(r.name);
-    var wc=tc?Math.max(2,r.cost/tc*bw*0.9):0;
-    var wl=tl?Math.max(2,r.leads/tl*bw*0.9):0;
-    h+='<text x="0" y="'+(y+13)+'" font-size="12.5" font-weight="600" fill="var(--tx)">'+esc(r.name)+'</text>';
-    h+='<text x="0" y="'+(y+30)+'" font-size="10.5" fill="var(--tx3)">¥'+fmt(r.cpl,0)+'/条</text>';
-    h+='<rect x="105" y="'+(y+1)+'" width="'+wc.toFixed(1)+'" height="14" rx="3" fill="'+c+'" opacity=".82"><title>消耗 ¥'+fmt(r.cost,0)+'（'+pct(div(r.cost,tc))+'）</title></rect>';
-    h+='<text x="'+(105+wc+7)+'" y="'+(y+12)+'" font-size="10.5" fill="var(--tx2)">¥'+fmtK(r.cost)+'</text>';
-    h+='<rect x="105" y="'+(y+19)+'" width="'+wl.toFixed(1)+'" height="14" rx="3" fill="'+c+'" opacity=".42"><title>线索 '+fmt(r.leads)+'（'+pct(div(r.leads,tl))+'）</title></rect>';
-    h+='<text x="'+(105+wl+7)+'" y="'+(y+30)+'" font-size="10.5" fill="var(--tx2)">'+fmt(r.leads)+' 条</text>';
-  });
-  $('#shareChart').innerHTML = svgEl('0 0 '+W+' '+H, Math.min(H,460))+h+'</svg>'+
-    '<div class="lg"><span><i style="background:var(--tx3);opacity:.82"></i>上：消耗</span><span><i style="background:var(--tx3);opacity:.42"></i>下：线索量</span></div>';
-}
-
-/* ==================== 漏斗 ==================== */
-function renderFunnel(){
-  var o=agg(VIEW);
-  if(!o.vN){ $('#funnelChart').innerHTML='<div class="empty">当前范围无场观数据<br><span style="font-size:11.5px">2024 年数据未采集此项</span></div>'; return; }
-  var steps=[
-    {t:'场观人数',v:o.views,c:'var(--c1)'},
-    {t:'小风车点击',v:o.clicks,c:'var(--c4)'},
-    {t:'留资线索',v:o.leads,c:'var(--c2)'}
-  ];
-  var W=1000,H=250,mx=steps[0].v||1;
-  var h='';
-  steps.forEach(function(s,i){
-    var y=i*74+12, w=Math.max(60,(s.v/mx)*(W-260));
-    h+='<text x="0" y="'+(y+30)+'" font-size="12.5" font-weight="600" fill="var(--tx)">'+s.t+'</text>';
-    h+='<rect x="112" y="'+y+'" width="'+w.toFixed(1)+'" height="46" rx="6" fill="'+s.c+'" opacity=".85"/>';
-    h+='<text x="'+(112+16)+'" y="'+(y+29)+'" font-size="17" font-weight="700" fill="#fff">'+fmt(s.v)+'</text>';
-    if(i>0){
-      var r=div(s.v,steps[i-1].v);
-      h+='<text x="'+(112+w+12)+'" y="'+(y+29)+'" font-size="13" font-weight="700" fill="'+s.c+'">'+pct(r,2)+'</text>';
-      h+='<path d="M'+(112+34)+' '+(y-13)+' L'+(112+34)+' '+(y-2)+'" stroke="var(--tx3)" stroke-width="1.6" marker-end="url(#ar)"/>';
+    var y=pt+ih*i/4;
+    svg+='<line x1="'+pl+'" y1="'+y.toFixed(1)+'" x2="'+(W-pr)+'" y2="'+y.toFixed(1)+'" stroke="#f1f5f9" stroke-width="1"/>';
+    var lv=leftR.max-(leftR.max-leftR.min)*i/4;
+    svg+='<text x="'+(pl-8)+'" y="'+(y+4).toFixed(1)+'" text-anchor="end" font-size="11" fill="#64748b">'+fmtCompact(lv)+'</text>';
+    if(rightR.max>rightR.min){
+      var rv=rightR.max-(rightR.max-rightR.min)*i/4;
+      svg+='<text x="'+(W-pr+8)+'" y="'+(y+4).toFixed(1)+'" text-anchor="start" font-size="11" fill="#94a3b8">'+fmtCompact(rv)+'</text>';
     }
-  });
-  $('#funnelChart').innerHTML = svgEl('0 0 '+W+' '+H,236)+
-    '<defs><marker id="ar" markerWidth="7" markerHeight="7" refX="3.5" refY="3" orient="auto"><path d="M0 0 L7 3 L0 6 z" fill="var(--tx3)"/></marker></defs>'+h+'</svg>'+
-    '<div class="lg"><span>基于 '+o.vN+' 场有效记录</span></div>';
+  }
+  // 柱状图（仅一个bar系列，放最底层）
+  var barS=data.filter(function(s){return s.type==='bar' && s.axis==='left'})[0];
+  if(barS){
+    var bw=Math.max(4,Math.min(40,iw/agK.length*0.55));
+    barS.values.forEach(function(v,i){ if(v!=null){
+      var x=X(i), y=YL(v), h=(pt+ih)-y;
+      svg+='<rect class="ov3-trend-rect" data-idx="'+i+'" x="'+(x-bw/2).toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+bw.toFixed(1)+'" height="'+h.toFixed(1)+'" fill="'+barS.color+'" opacity=".85" rx="4"/>';
+    }});
+  }
+  // 折线
+  data.forEach(function(s){ if(s.type==='line'){
+    var segs=[],cur=[];
+    s.values.forEach(function(v,i){ if(v==null){ if(cur.length)segs.push(cur); cur=[]; } else { var y=s.axis==='left'?YL(v):YR(v); cur.push([X(i),y,i,v]); } });
+    if(cur.length) segs.push(cur);
+    segs.forEach(function(sg){
+      var d='M'+sg.map(function(p){return p[0].toFixed(1)+' '+p[1].toFixed(1);}).join('L');
+      svg+='<path d="'+d+'" fill="none" stroke="'+s.color+'" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>';
+    });
+    // 点
+    var step=Math.max(1,Math.ceil(agK.length/50));
+    cur=[]; s.values.forEach(function(v,i){ if(v!=null && i%step===0) cur.push([X(i),s.axis==='left'?YL(v):YR(v),i,v]); });
+    cur.forEach(function(p){
+      svg+='<circle class="ov3-trend-dot" data-idx="'+p[2]+'" cx="'+p[0].toFixed(1)+'" cy="'+p[1].toFixed(1)+'" r="3.5" fill="#fff" stroke="'+s.color+'" stroke-width="2"/>';
+    });
+  }});
+  // X轴标签
+  var ls=Math.max(1,Math.ceil(agK.length/10));
+  agK.forEach(function(k,i){ if(i%ls===0 || i===agK.length-1){
+    svg+='<text x="'+X(i).toFixed(1)+'" y="'+(H-20)+'" text-anchor="middle" font-size="11" fill="#64748b">'+k.slice(5)+'</text>';
+  }});
+  // 交互层
+  svg+='<rect id="trend3Hit" x="'+pl+'" y="'+pt+'" width="'+iw+'" height="'+ih+'" fill="transparent" style="cursor:crosshair"/>';
+  svg+='<line id="trend3Cursor" x1="0" y1="'+pt+'" x2="0" y2="'+(pt+ih)+'" stroke="#94a3b8" stroke-width="1" stroke-dasharray="4 4" style="display:none"/>';
+  svg+='</svg>';
+
+  $('#trendChart3').innerHTML = svg;
+  attachTrend3Tip(agK,data,X,YL,YR,pl,pr,iw);
 }
+
+function rangeWithPad(vals){
+  vals=vals.filter(function(v){return v!=null;});
+  if(!vals.length) return {min:0,max:1};
+  var mn=Math.min.apply(null,vals), mx=Math.max.apply(null,vals);
+  if(mx===mn){ mx=mx*1.2+1; mn=Math.max(0,mn*0.8-1); }
+  var pad=(mx-mn)*0.1;
+  return {min:Math.max(0,mn-pad),max:mx+pad};
+}
+function fmtCompact(v){ if(v>=10000) return (v/10000).toFixed(1)+'w'; if(v>=1000) return (v/1000).toFixed(1)+'k'; return Math.round(v).toString(); }
+
+function attachTrend3Tip(dates,series,X,YL,YR,pl,pr,iw){
+  var tip=$('#ov3TrendTip'); if(!tip){ tip=document.createElement('div'); tip.id='ov3TrendTip'; tip.className='ov3-tip'; document.body.appendChild(tip); }
+  var hit=$('#trend3Hit'), cursor=$('#trend3Cursor');
+  if(!hit) return;
+  var svg=hit.closest('svg');
+  var move=function(e){
+    var rect=svg.getBoundingClientRect();
+    var x=e.clientX-rect.left; var rx=x*1100/rect.width;
+    if(rx<pl || rx>1100-pr){ cursor.style.display='none'; tip.style.display='none'; return; }
+    var i=Math.round((rx-pl)/(1100-pl-pr)*(dates.length-1));
+    i=Math.max(0,Math.min(dates.length-1,i));
+    cursor.setAttribute('x1',X(i).toFixed(1)); cursor.setAttribute('x2',X(i).toFixed(1)); cursor.style.display='block';
+    var html='<div class="tt">'+dates[i]+'</div>';
+    series.forEach(function(s){
+      var v=s.values[i];
+      if(v==null) return;
+      html+='<div class="tr"><i style="background:'+s.color+'"></i><span>'+s.label+'</span><b>'+s.fmt(v)+'</b></div>';
+    });
+    tip.innerHTML=html; tip.style.display='block';
+    tip.style.left=(e.clientX+14)+'px'; tip.style.top=(e.clientY-tip.offsetHeight/2)+'px';
+  };
+  var leave=function(){ cursor.style.display='none'; tip.style.display='none'; };
+  hit.addEventListener('mousemove',move); hit.addEventListener('mouseleave',leave);
+  hit.addEventListener('touchmove',function(e){ move(e.touches[0]); },{passive:true});
+}
+
+function renderTrendLegend3(){
+  $('#trendLegend3').innerHTML=TREND3_SERIES.map(function(s){
+    var on=trend3Active.indexOf(s.k)>=0;
+    return '<span class="item '+(on?'':'off')+'" data-k="'+s.k+'"><i style="background:'+s.color+'"></i>'+s.label+'</span>';
+  }).join('');
+  $$('#trendLegend3 .item').forEach(function(el){
+    el.onclick=function(){
+      var k=el.dataset.k, idx=trend3Active.indexOf(k);
+      if(idx>=0){ if(trend3Active.length>1) trend3Active.splice(idx,1); }
+      else { trend3Active.push(k); }
+      renderTrendLegend3(); renderTrend3();
+    };
+  });
+}
+
+/* ---------- 主播贡献矩阵 ---------- */
+function renderShare3(){
+  var byA={}; VIEW.forEach(function(s){var a=s.a||s.anchor; byA[a]=byA[a]||{leads:0,cost:0}; byA[a].leads+=s.leads||0; byA[a].cost+=s.cost||0;});
+  var arr=Object.keys(byA).map(function(a){return {name:a,...byA[a],cpl:byA[a].leads?byA[a].cost/byA[a].leads:0};});
+  arr.sort(function(a,b){return b.leads-a.leads;});
+  var maxLeads=Math.max.apply(null,arr.map(function(x){return x.leads;}));
+  var colors=['#2563eb','#3b82f6','#60a5fa','#93c5fd','#bfdbfe','#dbeafe'];
+  $('#shareChart3').innerHTML=arr.slice(0,10).map(function(r,i){
+    var c=colors[Math.min(i,colors.length-1)], c2=colors[Math.min(i+1,colors.length-1)];
+    return '<div class="ov3-share-row '+(i===0?'top1':(i===1?'top2':(i===2?'top3':'')))+'" style="--c:'+c+';--c2:'+c2+'">'+
+      '<div class="rank">'+(i+1)+'</div>'+
+      '<div class="name">'+r.name+'</div>'+
+      '<div class="bars">'+
+        '<div class="bar-w"><div class="bar" style="width:'+(maxLeads?r.leads/maxLeads*100:0)+'%"></div></div>'+
+        '<div class="meta"><span>线索 <b>'+fmt(r.leads)+'</b> 条</span><span>消耗 ¥'+fmtK(r.cost)+' · CPL ¥'+fmt(r.cpl,0)+'</span></div>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+}
+
+/* ---------- 转化漏斗 ---------- */
+function renderFunnel3(){
+  var views=VIEW.reduce(function(s,x){return s+(x.views||0);},0);
+  var clicks=VIEW.reduce(function(s,x){return s+(x.clicks||0);},0);
+  var leads=VIEW.reduce(function(s,x){return s+(x.leads||0);},0);
+  var steps=[
+    {label:'场观人数',val:views,color:'linear-gradient(90deg,#60a5fa,#2563eb)'},
+    {label:'小风车点击',val:clicks,color:'linear-gradient(90deg,#c084fc,#8b5cf6)'},
+    {label:'留资线索',val:leads,color:'linear-gradient(90deg,#34d399,#10b981)'}
+  ];
+  var max=Math.max(steps[0].val,1);
+  $('#funnelChart3').innerHTML=steps.map(function(s,i){
+    var w=Math.max(28, (s.val/max*100));
+    var next=steps[i+1];
+    var rate=next && s.val? (next.val/s.val*100):0;
+    var drop=next? (100-rate):0;
+    return '<div class="ov3-fstep">'+
+      '<div class="fbar" style="width:'+w+'%;margin:0 auto;background:'+s.color+'">'+fmt(s.val)+'</div>'+
+      '<div class="flab"><span>'+s.label+'</span>'+(next?'<span>转化 <b>'+rate.toFixed(1)+'%</b> · 流失 <b>'+drop.toFixed(1)+'%</b></span>':'')+'</div>'+
+    '</div>'+(next?'<div class="ov3-farrow">▼</div>':'');
+  }).join('');
+}
+
+/* ---------- 主播雷达图平铺 ---------- */
+var RADAR_DIMS=[
+  {k:'lph',label:'产能',max:10},
+  {k:'cpl',label:'成本效率',max:800,inv:true},
+  {k:'cr',label:'留资转化',max:60},
+  {k:'stab',label:'稳定性',max:100},
+  {k:'scale',label:'投入规模',max:50000},
+  {k:'views',label:'流量获取',max:5000}
+];
+function renderRadar3(){
+  var byA={};
+  VIEW.forEach(function(s){
+    var a=s.a||s.anchor;
+    if(!byA[a]) byA[a]={name:a,leads:0,cost:0,views:0,clicks:0,hours:0,sessions:0,days:{}};
+    byA[a].leads+=s.leads||0; byA[a].cost+=s.cost||0; byA[a].views+=s.views||0; byA[a].clicks+=s.clicks||0;
+    byA[a].hours+=(s.durMin||60)/60; byA[a].sessions++; byA[a].days[s.d]=1;
+  });
+  // 团队均值
+  var names=Object.keys(byA);
+  var team={};
+  RADAR_DIMS.forEach(function(d){
+    var vals=names.map(function(n){ return scoreDim(byA[n],d); }).filter(function(v){return v!=null;});
+    team[d.k]=vals.length?vals.reduce(function(s,v){return s+v;},0)/vals.length:0;
+  });
+  // 选活跃主播
+  var anchors=names.map(function(n){return byA[n];}).filter(function(a){return a.sessions>=2;}).sort(function(a,b){return b.leads-a.leads;}).slice(0,8);
+  var colorPool=['#2563eb','#10b981','#f59e0b','#8b5cf6','#ef4444','#06b6d4','#ec4899','#14b8a6'];
+
+  $('#ovRadar3').innerHTML =
+    '<div class="ov3-radar-section">'+
+      '<h3>主播能力雷达</h3>'+
+      '<div class="sub">'+RADAR_DIMS.map(function(d){return d.label;}).join(' · ')+' · 实线=主播 / 虚线=团队均值</div>'+
+      '<div class="ov3-radar-grid">'+
+      anchors.map(function(a,i){
+        var c=colorPool[i%colorPool.length];
+        var scores=RADAR_DIMS.map(function(d){return {label:d.label,v:scoreDim(a,d)};});
+        var teamScores=RADAR_DIMS.map(function(d){return team[d.k];});
+        return '<div class="ov3-radar-card" style="--c:'+c+'">'+
+          '<div class="rh"><div class="dot"></div><b>'+a.name+'</b><div class="score">'+avgScore(scores).toFixed(0)+'</div></div>'+
+          radarSvg(scores,teamScores,c)+
+          '<div class="dims">'+scores.map(function(s){return '<span>'+s.label+' '+s.v.toFixed(0)+'</span>';}).join('')+'</div>'+
+        '</div>';
+      }).join('')+
+      '</div>'+
+    '</div>';
+}
+function scoreDim(a,d){
+  if(d.k==='lph') return Math.min(100, (a.hours?a.leads/a.hours:0)/d.max*100);
+  if(d.k==='cpl'){ var v=a.leads?a.cost/a.leads:0; return Math.max(0, Math.min(100, (1-v/d.max)*100)); }
+  if(d.k==='cr') return Math.min(100, (a.clicks?a.leads/a.clicks*100:0)/d.max*100);
+  if(d.k==='stab'){ var dayCount=Object.keys(a.days).length; return Math.min(100, dayCount>0?(a.sessions/dayCount)*50:0); }
+  if(d.k==='scale') return Math.min(100, a.cost/d.max*100);
+  if(d.k==='views') return Math.min(100, (a.sessions?(a.views/a.sessions):0)/d.max*100);
+  return 0;
+}
+function avgScore(scores){ return scores.reduce(function(s,x){return s+x.v;},0)/scores.length; }
+function radarSvg(scores,teamScores,color){
+  var W=240,H=160,CX=W/2,CY=H/2+5,R=55,n=scores.length;
+  var pts=function(vals){ return vals.map(function(v,i){ var ang=Math.PI/2+i*Math.PI*2/n; return [CX+R*Math.cos(ang)*(v/100), CY-R*Math.sin(ang)*(v/100)]; }); };
+  var p1=pts(scores.map(function(s){return s.v;})), p2=pts(teamScores);
+  var d1='M'+p1.map(function(p){return p[0].toFixed(1)+' '+p1[0][1].toFixed(1);}).join('L')+'Z';
+  // fix: use p[i]
+  var path1='M'+p1.map(function(p){return p[0].toFixed(1)+' '+p[1].toFixed(1);}).join('L')+'Z';
+  var path2='M'+p2.map(function(p){return p[0].toFixed(1)+' '+p[1].toFixed(1);}).join('L')+'Z';
+  var grid='';
+  for(var r=20;r<=100;r+=20){
+    var pp=scores.map(function(s,i){ var ang=Math.PI/2+i*Math.PI*2/n; return [CX+R*Math.cos(ang)*(r/100), CY-R*Math.sin(ang)*(r/100)]; });
+    grid+='<polygon points="'+pp.map(function(p){return p[0].toFixed(1)+','+p[1].toFixed(1);}).join(' ')+'" fill="none" stroke="#e2e8f0" stroke-width="1"/>';
+  }
+  var axes=scores.map(function(s,i){ var ang=Math.PI/2+i*Math.PI*2/n; var x=CX+R*Math.cos(ang), y=CY-R*Math.sin(ang); return '<line x1="'+CX+'" y1="'+CY+'" x2="'+x.toFixed(1)+'" y2="'+y.toFixed(1)+'" stroke="#e2e8f0" stroke-width="1"/><text x="'+(x+8*Math.cos(ang)).toFixed(1)+'" y="'+(y-8*Math.sin(ang)).toFixed(1)+'" font-size="9" fill="#64748b" text-anchor="middle">'+s.label+'</text>'; }).join('');
+  return '<svg viewBox="0 0 '+W+' '+H+'">'+grid+axes+'<path d="'+path2+'" fill="rgba(148,163,184,.12)" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4 3"/><path d="'+path1+'" fill="'+color+'22" stroke="'+color+'" stroke-width="2"/>'+p1.map(function(p){return '<circle cx="'+p[0].toFixed(1)+'" cy="'+p[1].toFixed(1)+'" r="2.5" fill="'+color+'" stroke="#fff" stroke-width="1"/>';}).join('')+'</svg>';
+}
+
+/* ---------- 调度 ---------- */
+function renderOverview3(){
+  renderHero3(); renderHeroGrid3(); renderInsights3(); renderTargetBoard3();
+  renderTrendLegend3(); renderTrend3(); renderShare3(); renderFunnel3(); renderRadar3();
+}
+
+/* compatibility */
+var TREND_M=[];
 
 /* ==================== 散点 ==================== */
 function renderScatter(){
@@ -1859,7 +2323,7 @@ function renderAll(){
   state.anchor=$('#fAnchor').value; state.slot=$('#fSlot').value;
   applyFilter();
   $$('#quickRange .chip').forEach(function(c){ c.classList.remove('on'); });
-  renderKPI(); renderAlerts(); renderDigest(); renderTrend(); renderShare(); renderFunnel();
+  renderOverview3();
   renderScatter(); renderAnchorCards();
   renderPivotFunnel(); renderMatrix(); renderMonthTrend(); renderMonthGrid(); renderHeat();
   renderDetail(); renderCross(); updateFocusBar();
