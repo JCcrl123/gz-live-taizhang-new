@@ -2119,11 +2119,32 @@ function boot(d){
   $$('#quickRange .chip')[2].classList.add('on');
 }
 
+/* ==================== 数据归一化：兼容预处理的 sessions 数据（data.json） ==================== */
+// 飞书原始数据经 build_sessions() 处理后有完整字段（bucket/ym/atyp e/agent/slot 等）。
+// 但 GitHub Pages 上的 data.json 是预处理的 sessions 数组，字段较精简：
+//   - 没有 bucket（用 u 表示时段，u 值恰好等于 BUCKETS）
+//   - 没有 ym（用 y 表示年月）
+//   - 没有 atype/agent/slot（不影响聚合）
+// 加载时归一化，确保所有 render 函数能正常取到字段。
+function normalizeSessions(arr){
+  if(!Array.isArray(arr)) return;
+  for(var i=0;i<arr.length;i++){
+    var s=arr[i];
+    if(s==null) continue;
+    if(s.bucket==null && s.u) s.bucket = s.u;          // ★ 关键：用 u 补 bucket（值与 BUCKETS 完全匹配）
+    if(s.ym==null && s.y) s.ym = s.y;                 // ★ ym ← y
+    if(s.anchor==null && s.a) s.anchor = s.a;         // 别名冗余，但代码有两套兼容写法
+    if(s.date==null && s.d) s.date = s.d;
+    // 数字字段保持 null（cvr/mvr 会显示 —，这是真实数据 v/k/o 缺失所致）
+  }
+}
+
 /* ==================== 启动：优先拉取 COS 最新数据，失败回退内联 ==================== */
 window.COS_DATA_URL = window.COS_DATA_URL || 'data.json';
 function initFromRaw(raw){
   var data = (raw && raw.maike) ? transformRaw(raw) : raw;
   if(data && data.sessions && data.sessions.length){
+    normalizeSessions(data.sessions);   // ★ 归一化后再 boot
     boot(data);
     var m=data.meta||{};
     toast('已同步 ' + (m.syncedAt||'?') + ' · ' + (m.total||'?') + ' 场 · 最新 ' + (m.lastDate||m.dateMax||''));
@@ -2177,6 +2198,7 @@ if(document.readyState === 'loading'){
       if(local && remote && remote <= local) return false;
       window.__LAST_SYNC_AT = remote;
       try { localStorage.setItem('gz_data_cache', JSON.stringify(d)); } catch(e){}
+      normalizeSessions(d.sessions);   // ★ 同步路径同样需要归一化
       boot(d);
       badge('COS 实时', remote);
       return true;
