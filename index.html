@@ -209,7 +209,14 @@ svg text{font-family:inherit;font-variant-numeric:tabular-nums}
 .ac-foc.on{background:var(--pri);color:#fff;border-color:var(--pri)}
 .heat td{cursor:pointer}
 .heat td:hover .hc{filter:brightness(1.08);outline:1px solid var(--tx3)}
-.ch-h{font-size:12.5px;font-weight:600;color:var(--tx2);margin:0 0 8px;padding-bottom:6px;border-bottom:1px solid var(--line2)}
+.ch-h{font-size:12.5px;font-weight:600;color:var(--tx2);margin:0 0 8px;padding-bottom:6px;border-bottom:1px solid var(--line2);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.ch-h .anchor-pick{margin-left:auto;padding:4px 8px;border:1px solid var(--line);border-radius:6px;background:var(--bg2);color:var(--tx);font-size:11.5px;font-weight:500;cursor:pointer;outline:none;font-family:inherit}
+.ch-h .anchor-pick:hover{border-color:var(--pri)}
+.ch-h .anchor-pick:focus{border-color:var(--pri);box-shadow:0 0 0 2px rgba(99,102,241,0.18)}
+.ch-h .anchor-pick optgroup{font-weight:700;color:var(--tx3);font-style:normal}
+.ch-h .chips{margin-left:auto}
+.ch-h .chips.mt-metric .chip{padding:4px 11px;font-size:11.5px;min-height:26px;border-radius:14px}
+.ch-h .chips.mt-metric .chip.on{background:var(--c3);border-color:var(--c3)}
 .cmp-row{display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid var(--line2);font-size:13px}
 .cmp-row:last-child{border-bottom:0}
 .cmp-row .cmp-k{color:var(--tx3);min-width:92px}
@@ -249,6 +256,16 @@ table.ctab tr.hl td{background:var(--panel2)}
 .pyr-summary .up{color:var(--up)}
 .pyr-summary .warn{color:var(--warn)}
 .pyr-summary .down{color:var(--down)}
+.pyr-points{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%;margin-top:2px}
+.pp{display:flex;gap:8px;align-items:flex-start;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px 10px;box-sizing:border-box}
+.pp-ico{flex-shrink:0;width:18px;height:18px;border-radius:5px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;margin-top:1px}
+.pp-bd{display:flex;flex-direction:column;gap:2px;min-width:0}
+.pp-bd b{font-size:11.5px;font-weight:700;color:var(--tx1);letter-spacing:.2px}
+.pp-bd span{font-size:11.5px;line-height:1.5;color:var(--tx2)}
+.pp.good .pp-ico{background:var(--down)} .pp.good{border-color:rgba(14,159,110,.28)}
+.pp.bad .pp-ico{background:var(--up)} .pp.bad{border-color:rgba(224,45,60,.28)}
+.pp.warn .pp-ico{background:var(--warn)} .pp.warn{border-color:rgba(245,158,11,.32)}
+.pp.fix .pp-ico{background:var(--pri)} .pp.fix{border-color:rgba(37,99,235,.28)}
 .pyr-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
 .pyr-head .badge{font-size:10.5px;color:var(--pri);background:var(--pri-bg,#eef2ff);padding:2px 8px;border-radius:10px;font-weight:700}
 .single-point{padding:18px 8px 4px;text-align:center}
@@ -394,8 +411,8 @@ window.__PRELOADED__={"meta": {"source": "飞书多维表格 · 迈科代理直�
       <div class="card-b">
         <div class="kpi6" id="kpi6"></div>
         <div class="grid2 funnel2">
-          <div><div class="ch-h">链路① · 成本转化链</div><div id="funnelCost"></div></div>
-          <div><div class="ch-h">链路② · 流量转化链</div><div id="funnelFlow"></div></div>
+          <div><div class="ch-h"><span>链路① · 成本转化链</span><select class="anchor-pick" id="anchorPick1" onchange="setFunAnchor(this.value)"><option value="">全部主播</option></select></div><div id="funnelCost"></div></div>
+          <div><div class="ch-h"><span>链路② · 流量转化链</span><select class="anchor-pick" id="anchorPick2" onchange="setFunAnchor(this.value)"><option value="">全部主播</option></select></div><div id="funnelFlow"></div></div>
         </div>
       </div>
     </div>
@@ -411,7 +428,7 @@ window.__PRELOADED__={"meta": {"source": "飞书多维表格 · 迈科代理直�
     <div class="card mb14">
       <div class="card-h"><h3>月度交叉可视化</h3></div>
       <div class="card-b">
-        <div class="ch-h">月度趋势 · 消耗 / 留资 / 单线索成本</div>
+        <div class="ch-h"><span>月度趋势 · 消耗 / 留资 / 转化率</span><div class="chips mt-metric" id="mtMetric"></div></div>
         <div id="monthTrend"></div>
         <div class="mt-split"></div>
         <div class="mg-head"><span class="ch-h" style="border:0;margin:0;padding:0">主播 × 时段 热力网格</span><div class="sp"></div><div class="chips" id="monthMetric"></div></div>
@@ -486,12 +503,16 @@ function mtShow(e, el){
   };
   var cost = d.c==='' ? null : +d.c;
   var leads= d.l==='' ? null : +d.l;
-  var cpl  = d.p==='' ? null : +d.p;
+  var met  = d.p==='' ? null : +d.p;
+  // 根据当前 state.mtMetric 决定 tooltip 第三行文案
+  var mDef = MT_METRICS.filter(function(x){return x.k===state.mtMetric;})[0] || MT_METRICS[0];
+  var metLbl = mDef.t;
+  var metVal = met==null ? '—' : mDef.fmt(met);
   tt.innerHTML =
     '<div class="mt-tt-d">'+d.b+'</div>' +
     rowHtml('消耗', 'var(--c1)', '¥'+fmtK(cost||0), cost==null?'—':null) +
     rowHtml('留资', 'var(--c2)', fmt(leads||0)+' 条', leads==null?'—':null) +
-    rowHtml('CPL',  'var(--c3)', cpl==null?'—':'¥'+fmt(cpl,0), null);
+    rowHtml(metLbl, 'var(--c3)', metVal, null);
   // 智能定位：靠近鼠标但避免溢出
   var tw = 190, th = 110;
   var x = e.clientX + 14, y = e.clientY + 14;
@@ -505,16 +526,21 @@ function mtHide(){
   var tt = document.getElementById('mt-tt');
   if(tt) tt.style.display = 'none';
 }
+function setFunAnchor(v){
+  state.funAnchor = v || '';
+  renderPivotFunnel();
+}
 var PAL = ['#2563eb','#0e9f6e','#f59e0b','#8b5cf6','#ec4899','#06b6d4','#ef4444','#84cc16','#f97316','#14b8a6','#a855f7','#3b82f6'];
 var BUCKETS = ['早间 06-10','午间 10-14','下午 14-18','晚间 18-22','深夜 22-06'];
 var WD = ['周一','周二','周三','周四','周五','周六','周日'];
 var DATA = null, SESS = [], VIEW = [];
-var state = { d1:'', d2:'', anchor:'', slot:'', trend:'leads', pivot:'leads', sortKey:'date', sortDesc:true, focus:'', crossDim:'anchor', crossMetric:'leads', pivotDim:'wd', monthMetric:'leads' };
+var state = { d1:'', d2:'', anchor:'', slot:'', trend:'leads', pivot:'leads', sortKey:'date', sortDesc:true, focus:'', crossDim:'anchor', crossMetric:'leads', pivotDim:'wd', monthMetric:'leads', funAnchor:'', mtMetric:'cpl' };
 
 /* ==================== 工具 ==================== */
 function $(s){ return document.querySelector(s); }
 function $$(s){ return Array.prototype.slice.call(document.querySelectorAll(s)); }
 function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+function strip(s){ return String(s==null?'':s).replace(/\s+/g,''); }
 function fmt(n,d){ if(n==null||isNaN(n))return '—'; d=d==null?0:d; return Number(n).toLocaleString('zh-CN',{minimumFractionDigits:d,maximumFractionDigits:d}); }
 function fmtK(n){ if(n==null||isNaN(n))return '—'; var a=Math.abs(n); if(a>=1e8)return (n/1e8).toFixed(2)+'亿'; if(a>=1e4)return (n/1e4).toFixed(1)+'万'; return fmt(n,0); }
 function pct(n,d){ if(n==null||isNaN(n))return '—'; return (n*100).toFixed(d==null?1:d)+'%'; }
@@ -1176,7 +1202,22 @@ function renderHeat(){
 
 /* ==================== 双链路蒸馏 v2（KPI 迷你图 + 金字塔 + 摘要） ==================== */
 function renderPivotFunnel(){
-  var o=agg(VIEW);
+  // === 0. 主播筛选（只影响链路金字塔，不影响 KPI 头条） ===
+  var anchors = Array.from(new Set(VIEW.map(function(s){return s.a;}).filter(Boolean))).sort(function(x,y){return x.localeCompare(y,'zh-CN');});
+  if(state.funAnchor && anchors.indexOf(state.funAnchor) < 0) state.funAnchor = '';
+  var funV = state.funAnchor ? VIEW.filter(function(s){return s.a===state.funAnchor;}) : VIEW;
+  // 同步两个标题旁的选择器选项
+  ['anchorPick1','anchorPick2'].forEach(function(id){
+    var el = document.getElementById(id);
+    if(!el) return;
+    var prev = el.value;
+    var html = '<option value="">全部主播</option>';
+    anchors.forEach(function(a){ html += '<option value="'+esc(a)+'">'+esc(a)+'</option>'; });
+    el.innerHTML = html;
+    el.value = state.funAnchor || '';
+  });
+
+  var o=agg(funV);
 
   // === 1. 6 KPI 头条（含按日趋势迷你图） ===
   var byD = {}; VIEW.forEach(function(s){ (byD[s.d] = byD[s.d] || []).push(s); });
@@ -1220,31 +1261,31 @@ function renderPivotFunnel(){
   var mvr  = o.mvr;
   var perWan = o.cost ? o.leads/o.cost*10000 : 0;
 
-  // 链路① 成本转化链：顶部=成本结果 → 留资 → 底部=消耗投入
+  // 链路① 成本转化链（倒三角 · 从大到小下探）：消耗(入口) → 留资 → 单线索成本(结果)
   var steps1 = [
-    {t:'单线索成本', fmt:'¥'+fmt(cpl,0)+'/条',   c:'var(--c3)', fw:0.30, fb:0.45},
-    {t:'留资',       fmt:fmt(o.leads)+' 条',     c:'var(--c2)', fw:0.55, fb:0.75},
-    {t:'消耗',       fmt:'¥'+fmtK(o.cost),      c:'var(--c1)', fw:0.85, fb:1.00}
+    {t:'消耗',       fmt:'¥'+fmtK(o.cost),    c:'var(--c1)', fw:1.00, fb:0.86},
+    {t:'留资',       fmt:fmt(o.leads)+' 条',  c:'var(--c2)', fw:0.64, fb:0.50},
+    {t:'单线索成本', fmt:'¥'+fmt(cpl,0)+'/条', c:'var(--c3)', fw:0.32, fb:0.20}
   ];
   var rates1 = [
-    {a:'¥'+fmt(cpl,0)+'/条'},
-    {a:'每万元产出 '+fmt(perWan,1)+' 条'}
+    {a:'每万元产出 '+fmt(perWan,1)+' 条'},
+    {a:'单条成本 ¥'+fmt(cpl,0)}
   ];
   var sum1 = genSumCost(cpl, perWan, o);
 
-  // 链路② 流量转化链：5 层金字塔（顶端 CPL → 底部 消耗）
+  // 链路② 流量转化链（倒三角 · 5 层 · 大→小下探）：消耗 → 场观/评论 → 小风车点击 → 留资 → 单线索成本
   var steps2 = [
-    {t:'单线索成本',     fmt:'¥'+fmt(cpl,0)+'/条',                                                  c:'var(--c3)', fw:0.22, fb:0.34},
-    {t:'留资',           fmt:fmt(o.leads)+' 条',                                                    c:'var(--c2)', fw:0.42, fb:0.55},
-    {t:'小风车点击',     fmt:fmt(o.clicks),                                                         c:'var(--c4)', fw:0.60, fb:0.72},
-    {t:'场观 / 评论',    fmt:fmt(o.views)+(o.comments?(' / '+fmt(o.comments)):''),                  c:'var(--c6)', fw:0.80, fb:0.90},
-    {t:'消耗',           fmt:'¥'+fmtK(o.cost),                                                      c:'var(--c1)', fw:0.94, fb:1.00}
+    {t:'消耗',        fmt:'¥'+fmtK(o.cost),                                             c:'var(--c1)', fw:1.00, fb:0.88},
+    {t:'场观 / 评论', fmt:fmt(o.views)+(o.comments?(' / '+fmt(o.comments)):''),         c:'var(--c6)', fw:0.78, fb:0.66},
+    {t:'小风车点击',  fmt:fmt(o.clicks),                                                c:'var(--c4)', fw:0.56, fb:0.44},
+    {t:'留资',        fmt:fmt(o.leads)+' 条',                                           c:'var(--c2)', fw:0.36, fb:0.26},
+    {t:'单线索成本',  fmt:'¥'+fmt(cpl,0)+'/条',                                         c:'var(--c3)', fw:0.20, fb:0.12}
   ];
   var rates2 = [
-    {a:'评论留资率 '+(mvr==null?'—':pct(mvr,1))},
-    {a:'点击转化率 '+(cvr==null?'—':pct(cvr,1))},
+    {a:'流量入口'},
     {a:'点击率 '+(ctr==null?'—':pct(ctr,2))},
-    {a:'流量入口'}
+    {a:'点击留资率 '+(cvr==null?'—':pct(cvr,1))},
+    {a:'CPL ¥'+fmt(cpl,0)}
   ];
   var sum2 = genSumFlow(o, ctr, cvr, mvr);
 
@@ -1253,107 +1294,137 @@ function renderPivotFunnel(){
   $('#funnelFlow').innerHTML  = '<div class="pyr-head"><span class="badge">流量转化链</span><span class="sub" style="font-size:10.5px">5 层金字塔</span></div>' + flowHead + buildPyramid(steps2, rates2, sum2);
 }
 
+function pyrPoint(cls, ico, title, text){
+  return '<div class="pp '+cls+'"><span class="pp-ico">'+ico+'</span>'
+       + '<div class="pp-bd"><b>'+title+'</b><span>'+text+'</span></div></div>';
+}
 function genSumCost(cpl, perWan, o){
-  var s = '<b>链路① 概览：</b>每万元消耗产出 <b>'+fmt(perWan,1)+'</b> 条线索，单线索成本 <b>¥'+fmt(cpl,0)+'</b>。';
-  if(cpl > 500)      s += '<br><span class="up">● 不足</span> CPL 高于 ¥500 警戒线，建议复盘定向与素材相关性，减少无效曝光。';
-  else if(cpl > 300) s += '<br><span class="warn">● 中等</span> CPL 在 ¥300-500 区间，仍有优化空间，可尝试精细化人群包与高意向时段加码。';
-  else               s += '<br><span class="down">● 优势</span> CPL 低于 ¥300 基线，留资效率较高，可考虑放量。';
-  if(perWan >= 25)      s += '<br><span class="down">→ 改善点</span> 流量价值稳定，建议保持当前投放节奏，持续监控波动。';
-  else if(perWan >= 15) s += '<br><span class="warn">→ 改善点</span> 流量价值中等，建议结合场观→点击漏斗定位流失环节。';
-  else                  s += '<br><span class="up">→ 改善点</span> 流量价值偏低，需重新评估投放素材与时段策略。';
-  return s;
+  var adv, dis, warn, fix;
+  if(cpl <= 300){
+    adv = '单线索成本仅 <b>¥'+fmt(cpl,0)+'</b>，优于 ¥300 基线，留资效率较高。';
+    dis = (perWan>0 && perWan<15) ? '每万元仅产出 '+fmt(perWan,1)+' 条线索，放量空间尚未打开。' : '暂无明显短板，整体处于健康区间。';
+    warn = (perWan>=25) ? '已显放量趋势，需警惕成本随规模上升而漂移。' : 'CPL 处于低位，注意排除异常低价（如数据缺失）。';
+    fix = '保持当前投放节奏，适度加预算并监控 CPL 波动，优先锁定高意向时段。';
+  } else if(cpl <= 500){
+    adv = 'CPL 为 ¥'+fmt(cpl,0)+'，处于可承压区间，留资基本盘稳定。';
+    dis = 'CPL 高于 ¥300 基线，单线索经济性一般，存在压缩空间。';
+    warn = 'CPL 已接近 ¥500 警戒线，再升将显著侵蚀获客 ROI。';
+    fix = '精细化人群包、优化素材相关性，并在高转化时段（见矩阵）集中预算。';
+  } else {
+    adv = '暂无明显优势项，链路经济性偏弱。';
+    dis = '<b>单线索成本 ¥'+fmt(cpl,0)+' 高于 ¥500 警戒线</b>，留资成本偏高。';
+    warn = 'CPL 严重超阈，当前投放模式已不可持续，需立即干预。';
+    fix = '暂停低效计划，复盘定向与素材、重建落地转化路径，优先止血。';
+  }
+  return '<div class="pyr-points">'
+    + pyrPoint('good','▲','优势',adv)
+    + pyrPoint('bad','▼','劣势',dis)
+    + pyrPoint('warn','⚠','预警',warn)
+    + pyrPoint('fix','✦','改善建议',fix)
+    + '</div>';
 }
 
 function genSumFlow(o, ctr, cvr, mvr){
-  var s = '<b>链路② 概览：</b>从消耗到留资的完整路径：';
-  s += '场观/评论 → 小风车点击 '+(ctr==null?'<span class="dim">—</span>':'<b>'+pct(ctr,2)+'</b>');
-  s += ' → 留资 '+(cvr==null?'<span class="dim">—</span>':'<b>'+pct(cvr,1)+'</b>');
-  s += ' → CPL '+(o.cpl==null?'<span class="dim">—</span>':'<b>¥'+fmt(o.cpl,0)+'</b>')+'。';
-  var weakName = '—';
-  var arr = [{n:'点击率',v:ctr},{n:'点击转化率',v:cvr},{n:'评论留资率',v:mvr}];
-  var valid = arr.filter(function(x){return x.v!=null;});
-  if(valid.length){
-    var weak = valid.reduce(function(a,b){ return a.v<b.v?a:b; });
-    weakName = weak.n;
-  }
-  s += '<br><span class="up">● 薄弱环节：'+weakName+'</span>（该环节是链路最低转化点）。';
-  if(weakName==='点击率')         s += ' 建议优化素材前 3 秒吸引力，提升曝光→点击效率。';
-  else if(weakName==='点击转化率') s += ' 建议优化落地页与留资表单，缩短转化路径。';
-  else if(weakName==='评论留资率') s += ' 建议强化主播话术引导，提升评论用户留资意愿。';
-  return s;
+  var arr=[{n:'点击率',v:ctr},{n:'点击转化率',v:cvr},{n:'评论留资率',v:mvr}];
+  var valid=arr.filter(function(x){return x.v!=null;});
+  var weak = valid.length ? valid.reduce(function(a,b){return a.v<b.v?a:b;}) : null;
+  var strong= valid.length ? valid.reduce(function(a,b){return a.v>b.v?a:b;}) : null;
+  var weakName = weak ? weak.n : '—';
+  var adv = strong ? '<b>'+strong.n+' '+pct(strong.v,1)+'</b> 为链路最优环节，构成核心转化支点。' : '当前无场观/评论数据，链路②指标暂不可计算。';
+  var dis = weak ? '<b>'+weakName+' '+pct(weak.v,1)+'</b> 为链路最低转化点，是主要流失环节。' : '各环节数据缺失，无法定位薄弱环节。';
+  var warn = (!valid.length) ? '链路②完全无数据（场观/点击/评论缺失），无法评估流量质量。'
+            : (weak.v < 0.05 ? '最弱环节转化率低于 5%，存在严重漏斗泄漏。' : '流量漏斗存在中段损耗，需关注转化。');
+  var fix;
+  if(weakName==='点击率') fix='优化素材前 3 秒吸引力，提升曝光→点击效率。';
+  else if(weakName==='点击转化率') fix='优化落地页与留资表单，缩短转化路径、减少跳转。';
+  else if(weakName==='评论留资率') fix='强化主播话术引导，提升评论用户留资意愿。';
+  else if(weakName==='—') fix='补充场观/评论数据埋点，恢复链路②可观测性。';
+  else fix='沿最弱环节做 A/B 测试，逐项提升转化率。';
+  return '<div class="pyr-points">'
+    + pyrPoint('good','▲','优势',adv)
+    + pyrPoint('bad','▼','劣势',dis)
+    + pyrPoint('warn','⚠','预警',warn)
+    + pyrPoint('fix','✦','改善建议',fix)
+    + '</div>';
 }
 
 /* ====== 金字塔 SVG 生成（垂直梯形、层间箭头 + 转化率徽章 + 底部摘要） ====== */
-/* ====== 金字塔 SVG 生成 v3（水平居中 + 中央大数字 + 大胶囊转化率徽章 + 宽摘要） ====== */
+/* ====== 金字塔 SVG v4：倒三角+垂直下探箭头+大数据徽章+4点分点摘要 ====== */
+/* 倒三角：顶（最大池/入口）→ 底（最小结果）。
+   - i=0（顶部） fw=0.94 fb=1.00 → 最宽
+   - i=n-1（底部） fw=0.28 fb=0.42 → 最窄
+*/
 function buildPyramid(steps, rates, summary){
-  // steps: [{t, fmt, c, fw, fb}] 从顶（最窄）到 底（最宽）
-  // rates: 长度 = steps.length-1，层间转化率
+  // 倒三角：i=0 顶最宽(入口/最大池)，i=n-1 底最窄(结果)
   var n = steps.length;
   var W = 720, baseW = 540;
-  var top = 22, bh = 58, gap = 48;
-  var sumH = 130;
-  var H = top + n*bh + (n-1)*gap + sumH + 14;
+  var top = 18, bh = 56, gap = 44;
+  var sumH = 172;
+  var stackH = n*bh + (n-1)*gap;
+  var H = top + stackH + 10 + sumH + 8;
   var cx = W/2;
   var h = '';
-  // defs: 每层渐变
+  // defs: 每层水平渐变 + 全局箭头标记
   h += '<defs>';
   for(var i=0;i<n;i++){
     h += '<linearGradient id="pyr-g'+i+'" x1="0%" y1="0%" x2="100%" y2="0%">'
-       + '<stop offset="0%" stop-color="'+steps[i].c+'" stop-opacity="0.78"/>'
+       + '<stop offset="0%" stop-color="'+steps[i].c+'" stop-opacity="0.82"/>'
        + '<stop offset="100%" stop-color="'+steps[i].c+'" stop-opacity="1"/>'
        + '</linearGradient>';
   }
+  h += '<marker id="arr-down" viewBox="0 0 10 10" refX="5" refY="9" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,0 L5,9 Z" fill="#54627a"/></marker>';
   h += '</defs>';
   for(var i=0;i<n;i++){
     var s = steps[i];
     var y = top + i*(bh+gap);
-    var wTop = baseW * s.fw;
-    var wBot = baseW * s.fb;
+    var wTop = baseW * s.fw;     // 顶部宽（i=0 时最大）
+    var wBot = baseW * s.fb;     // 底部宽（i=n-1 时最小）
     var xTop = cx - wTop/2;
     var xBot = cx - wBot/2;
-    // 投影（轻微）
-    h += '<polygon points="'+(xBot+2).toFixed(1)+','+(y+2)+' '+(xBot+wBot+2).toFixed(1)+','+(y+2)+' '+(xBot+wBot+2).toFixed(1)+','+(y+bh+4).toFixed(1)+' '+(xBot+2).toFixed(1)+','+(y+bh+4).toFixed(1)+'" fill="rgba(0,0,0,.08)"/>';
-    // 梯形主体
+    // 投影
+    h += '<polygon points="'+(xBot+2).toFixed(1)+','+(y+2)+' '+(xBot+wBot+2).toFixed(1)+','+(y+2)+' '+(xBot+wBot+2).toFixed(1)+','+(y+bh+4).toFixed(1)+' '+(xBot+2).toFixed(1)+','+(y+bh+4).toFixed(1)+'" fill="rgba(0,0,0,.07)"/>';
+    // 梯形主体（倒三角：上宽下窄）
     h += '<polygon points="'+xTop.toFixed(1)+','+y+' '
         +(xTop+wTop).toFixed(1)+','+y+' '
         +(xBot+wBot).toFixed(1)+','+(y+bh)+' '
         +xBot.toFixed(1)+','+(y+bh)+'" '
-        +'fill="url(#pyr-g'+i+')" stroke="rgba(255,255,255,.75)" stroke-width="1.5"/>';
+        +'fill="url(#pyr-g'+i+')" stroke="rgba(255,255,255,.82)" stroke-width="1.5"/>';
     // 顶部高光带
     h += '<polygon points="'+xTop.toFixed(1)+','+y+' '
         +(xTop+wTop).toFixed(1)+','+y+' '
         +(xTop+wTop*0.94).toFixed(1)+','+(y+5)+' '
         +(xTop+wTop*0.06).toFixed(1)+','+(y+5)+'" '
-        +'fill="rgba(255,255,255,.3)"/>';
-    // 顶部小标签（左侧内）
-    h += '<text x="'+(xTop+12).toFixed(1)+'" y="'+(y+19).toFixed(1)+'" text-anchor="start" font-size="11.5" font-weight="600" fill="rgba(255,255,255,.96)">'+esc(s.t)+'</text>';
-    // 中央大数字（白色，字重 800，阴影增强可读）
+        +'fill="rgba(255,255,255,.28)"/>';
+    // 左上小标签
+    h += '<text x="'+(xTop+12).toFixed(1)+'" y="'+(y+19).toFixed(1)+'" text-anchor="start" font-size="11.5" font-weight="600" fill="rgba(255,255,255,.97)">'+esc(s.t)+'</text>';
+    // 中央大数字
     h += '<text x="'+cx.toFixed(1)+'" y="'+(y+bh/2+9).toFixed(1)+'" text-anchor="middle" font-size="24" font-weight="800" fill="#fff" style="text-shadow:0 1px 3px rgba(0,0,0,.3)">'+esc(s.fmt)+'</text>';
-    // 层间
+    // 层间下探箭头 + 大胶囊（置右侧避开中心数字）
     if(i < n-1){
       var midY = y + bh + gap/2;
-      // 渐变箭头连线
-      h += '<line x1="'+cx.toFixed(1)+'" y1="'+(y+bh+4)+'" x2="'+cx.toFixed(1)+'" y2="'+(midY-14).toFixed(1)+'" stroke="'+s.c+'" stroke-width="2.2" opacity="0.55" stroke-dasharray="4 3"/>';
-      h += '<polygon points="'+cx.toFixed(1)+','+(midY+8)+' '+(cx-7).toFixed(1)+','+(midY-3)+' '+(cx+7).toFixed(1)+','+(midY-3)+'" fill="'+s.c+'"/>';
-      // 转化率大胶囊徽章（中央显眼位置，宽度自适应）
+      var y1 = y + bh + 2, y2 = midY + 8;
+      h += '<line x1="'+cx+'" y1="'+y1+'" x2="'+cx+'" y2="'+y2+'" stroke="#54627a" stroke-width="2" marker-end="url(#arr-down)" opacity="0.85"/>';
       var label = rates[i].a;
-      var lw = Math.max(86, label.length * 8.4 + 28);
-      h += '<rect x="'+(cx-lw/2).toFixed(1)+'" y="'+(midY-13).toFixed(1)+'" width="'+lw.toFixed(1)+'" height="26" rx="13" fill="#fff" stroke="'+steps[i+1].c+'" stroke-width="2"/>';
-      h += '<text x="'+cx.toFixed(1)+'" y="'+(midY+5).toFixed(1)+'" text-anchor="middle" font-size="12.5" font-weight="700" fill="'+steps[i+1].c+'">'+esc(label)+'</text>';
+      var lw = Math.max(86, label.length * 8.4 + 26);
+      h += '<rect x="'+(cx+24).toFixed(1)+'" y="'+(midY-13).toFixed(1)+'" width="'+lw.toFixed(1)+'" height="26" rx="13" fill="#fff" stroke="'+steps[i+1].c+'" stroke-width="2"/>';
+      h += '<text x="'+(cx+24+lw/2).toFixed(1)+'" y="'+(midY+5).toFixed(1)+'" text-anchor="middle" font-size="12.5" font-weight="700" fill="'+steps[i+1].c+'">'+esc(label)+'</text>';
     }
   }
-  // 摘要（宽容器，左右留白，避免文字被截断）
-  var sumY = top + n*(bh+gap) + 8;
+  // 4 点分点摘要
+  var sumY = top + stackH + 10;
   h += '<foreignObject x="6" y="'+sumY+'" width="'+(W-12)+'" height="'+sumH+'">';
-  h += '<div xmlns="http://www.w3.org/2000/xhtml" class="pyr-summary">'+summary+'</div>';
+  h += '<div xmlns="http://www.w3.org/1999/xhtml" class="pyr-summary">'+summary+'</div>';
   h += '</foreignObject>';
-  return svgEl('0 0 '+W+' '+H, Math.min(H, 580)) + h + '</svg>';
+  return svgEl('0 0 '+W+' '+H, Math.min(H, 660)) + h + '</svg>';
 }
 /* ==================== 主播规律矩阵 v2（星期 / 场次 × 主播，匹配修复 + 指标 chip） ==================== */
 function renderMatrix(){
   var cols = state.pivotDim==='p' ? BUCKETS : WD;
-  // 关键修复：'wd' 模式 s.wd 是数字 0-6，cols 是字符串，不能直接 ===，必须按列下标匹配
-  function match(s, ci){ return state.pivotDim==='p' ? s.bucket===cols[ci] : s.wd===ci; }
+  // 匹配修复：'p' 模式按时段名(s.bucket)匹配并做去空白容错；'wd' 模式按列下标(0-6)匹配
+  function match(s, ci){
+    if(state.pivotDim==='p'){ return s.bucket===cols[ci] || strip(s.bucket)===strip(cols[ci]); }
+    return s.wd===ci || (+s.wd)===ci;
+  }
   var byA={}; VIEW.forEach(function(s){ (byA[s.a]=byA[s.a]||[]).push(s); });
   var names=Object.keys(byA).sort(function(x,y){ return agg(byA[y]).leads-agg(byA[x]).leads; }).slice(0,12);
   if(!names.length){ $('#matrixChart').innerHTML='<div class="empty">数据不足</div>'; return; }
@@ -1409,11 +1480,12 @@ function renderMonthTrend(){
 
   if(!ds.length){ $('#monthTrend').innerHTML='<div class="empty">无数据</div>'; return; }
 
-  // 决定桶：≤60 天 或 月数<2 → 按日；否则按月
-  var dateSpan = ds.length>=2 ? (Date.parse(ds[ds.length-1]) - Date.parse(ds[0]))/864e5 : 0;
-  var useDaily = dateSpan <= 60 || ms.length < 2;
+  // 决定桶：有效数据天数（ds.length = VIEW 中实际有数据的不同日期数）≤ 62 → 按日；> 62 → 按月
+  // 注意：是按"有数据的日期数"判断，不是按自然日跨度的 dateSpan
+  var useDaily = ds.length <= 62;
   var buckets = useDaily ? ds : ms;
   var byBucket = useDaily ? byD : byM;
+  var dateSpan = ds.length>=2 ? (Date.parse(ds[ds.length-1]) - Date.parse(ds[0]))/864e5 : 0;
 
   // 单期：降级为 5 KPI 卡片
   if(buckets.length < 2){
@@ -1433,97 +1505,140 @@ function renderMonthTrend(){
     return;
   }
 
-  // 多期：3 系列
-  var series={
-    cost:  buckets.map(function(b){ return agg(byBucket[b]).cost; }),
-    leads: buckets.map(function(b){ return agg(byBucket[b]).leads; }),
-    cpl:   buckets.map(function(b){ return agg(byBucket[b]).cpl; })
-  };
-  var defs=[
-    {k:'cost',  t:'消耗',       c:'var(--c1)', last:fmtK(series.cost[buckets.length-1])},
-    {k:'leads', t:'留资数',     c:'var(--c2)', last:fmt(series.leads[buckets.length-1])},
-    {k:'cpl',   t:'单线索成本', c:'var(--c3)', last:series.cpl[buckets.length-1]==null?'—':'¥'+fmt(series.cpl[buckets.length-1],0)}
-  ];
-  // 归一化（保留 null）
-  function norm(arr){ var v=arr.filter(function(x){return x!=null;}); if(!v.length) return arr;
-    var mn=Math.min.apply(null,v), mx=Math.max.apply(null,v);
-    return arr.map(function(x){ return x==null?null:(mx===mn?0.5:(x-mn)/(mx-mn)); }); }
-  var nCost=norm(series.cost), nLeads=norm(series.leads), nCpl=norm(series.cpl);
+  // 双轴：左轴=消耗(¥)，右轴=state.mtMetric(CPL/小风车点击留资率/评论留资率)
+  var N = buckets.length;
+  var cost  = buckets.map(function(b){ return agg(byBucket[b]).cost; });
+  var leads = buckets.map(function(b){ return agg(byBucket[b]).leads; });
+  // 根据 state.mtMetric 决定右轴数据
+  if(!MT_METRICS.some(function(x){return x.k===state.mtMetric;})) state.mtMetric = 'cpl';
+  var mDef = MT_METRICS.filter(function(x){return x.k===state.mtMetric;})[0];
+  var metric = buckets.map(function(b){ return mDef.pick(agg(byBucket[b])); });
 
-  // 原始极值（用于 Y 轴 / tooltip 显示）
-  var rawMaxCost = Math.max.apply(null, series.cost.filter(function(x){return x!=null;}).concat([1]));
-  var rawMaxLeads= Math.max.apply(null, series.leads.filter(function(x){return x!=null;}).concat([1]));
-  var rawMaxCpl  = Math.max.apply(null, series.cpl.filter(function(x){return x!=null;}).concat([1]));
+  function maxOf(a){ var v=a.filter(function(x){return x!=null&&!isNaN(x);}); return v.length?Math.max.apply(null,v):0; }
+  function minOf(a){ var v=a.filter(function(x){return x!=null&&!isNaN(x);}); return v.length?Math.min.apply(null,v):0; }
+  var cMax=maxOf(cost), cMin=Math.min(0,minOf(cost));
+  var pMax=maxOf(metric),  pMin=Math.min(0,minOf(metric));
+  function pad(v){ return v<=0 ? (v===0?1:Math.abs(v)*1.2) : v*1.12; }
+  cMax=pad(cMax); pMax=pad(pMax);
+  if(cMax===cMin) cMax=cMin+1;
+  if(pMax===pMin) pMax=pMin+1;
 
-  var W=1000,H=300,pl=48,pr=20,pt=28,pb=48, iw=W-pl-pr, ih=H-pt-pb;
-  var X=function(i){ return pl+(buckets.length<2?iw/2:i*iw/(buckets.length-1)); };
-  var Y=function(t){ return pt+ih-(t)*ih; };
-  var g='';
-  // Y 轴 5 个 tick（虚线 + 标签 0/0.25/0.5/0.75/1.0 + 原值范围小字）
-  for(var i=0;i<=4;i++){
-    var y=pt+ih*i/4;
-    var ratio=(4-i)/4;
+  var W=1000,H=330,pl=110,pr=100,pt=34,pb=58, iw=W-pl-pr, ih=H-pt-pb;
+  var X=function(i){ return pl + (N<2?iw/2 : i*iw/(N-1)); };
+  var YL=function(v){ return pt + ih - ((v-cMin)/((cMax-cMin)||1))*ih; };
+  var YR=function(v){ return pt + ih - ((v-pMin)/((pMax-pMin)||1))*ih; };
+
+  // 网格 + 双轴刻度标签（左=消耗¥，右=mtMetric）
+  var g='', TICKS=5;
+  for(var i=0;i<=TICKS;i++){
+    var y = pt + ih*i/TICKS;
+    var lv = cMax - (cMax-cMin)*i/TICKS;
+    var rv = pMax - (pMax-pMin)*i/TICKS;
     g+='<line x1="'+pl+'" y1="'+y.toFixed(1)+'" x2="'+(W-pr)+'" y2="'+y.toFixed(1)+'" stroke="var(--line)" stroke-dasharray="3 4"/>';
-    g+='<text x="'+(pl-6).toFixed(1)+'" y="'+(y+3.5).toFixed(1)+'" text-anchor="end" font-size="10" fill="var(--tx3)">'+ratio.toFixed(2)+'</text>';
+    g+='<text x="'+(pl-9).toFixed(1)+'" y="'+(y+3.5).toFixed(1)+'" text-anchor="end" font-size="10.5" fill="var(--c1)">¥'+fmtK(lv)+'</text>';
+    // 右轴刻度：根据指标显示 ¥ / % / 纯数字
+    var rvTxt = mDef.unit==='¥' ? '¥'+fmt(rv,0) : (mDef.unit==='%' ? pct(rv,1) : fmt(rv,2));
+    g+='<text x="'+(W-pr+9).toFixed(1)+'" y="'+(y+3.5).toFixed(1)+'" text-anchor="start" font-size="10.5" fill="var(--c3)">'+rvTxt+'</text>';
   }
-  // Y 轴标题（旋转）：归一化空间
-  g+='<text x="12" y="'+(pt+ih/2)+'" text-anchor="middle" font-size="10" fill="var(--tx3)" transform="rotate(-90 12 '+(pt+ih/2)+')">归一化值（各指标独立）</text>';
+  // 左侧旋转标题（移出 pl 范围，x=14 保持；pl=110 已保证刻度从 101 往左排，不会撞到 x=18 的标题）
+  g+='<text x="14" y="'+(pt+ih/2)+'" text-anchor="middle" font-size="11" font-weight="600" fill="var(--c1)" transform="rotate(-90 14 '+(pt+ih/2)+')">消耗（¥）</text>';
+  // 右轴标题：按当前指标显示单位
+  g+='<text x="'+(W-14)+'" y="'+(pt+ih/2)+'" text-anchor="middle" font-size="11" font-weight="600" fill="var(--c3)" transform="rotate(90 '+(W-14)+' '+(pt+ih/2)+')">'+mDef.t+'（'+mDef.axisUnit+'）</text>';
 
-  // CPL 柱状（半透明）
-  var bw=Math.max(2, Math.min(16, iw/buckets.length*0.6));
-  var bars='';
-  buckets.forEach(function(b,i){
-    if(nCpl[i]==null) return;
-    var x=X(i);
-    bars+='<rect x="'+(x-bw/2).toFixed(1)+'" y="'+Y(nCpl[i]).toFixed(1)+'" width="'+bw.toFixed(1)+'" height="'+(pt+ih-Y(nCpl[i])).toFixed(1)+'" fill="var(--c3)" opacity="0.32" rx="2"/>';
-  });
-  // 折线函数
-  function linePath(ns){ var segs=[],cur=[]; ns.forEach(function(v,i){ if(v==null){ if(cur.length)segs.push(cur); cur=[]; } else cur.push([X(i),Y(v)]); }); if(cur.length)segs.push(cur);
-    return segs.map(function(sg){ return 'M'+sg.map(function(p){return p[0].toFixed(1)+' '+p[1].toFixed(1);}).join('L'); }).join(' '); }
-  var paths='';
-  paths+='<path d="'+linePath(nCost)+'" fill="none" stroke="var(--c1)" stroke-width="2.4" stroke-linejoin="round"/>';
-  paths+='<path d="'+linePath(nLeads)+'" fill="none" stroke="var(--c2)" stroke-width="2.4" stroke-linejoin="round"/>';
-  // 点
-  var dots='', colMap={cost:'var(--c1)',leads:'var(--c2)',cpl:'var(--c3)'};
-  buckets.forEach(function(b,i){
-    [['cost',nCost[i]],['leads',nLeads[i]],['cpl',nCpl[i]]].forEach(function(p){
-      if(p[1]==null) return;
-      dots+='<circle cx="'+X(i).toFixed(1)+'" cy="'+Y(p[1]).toFixed(1)+'" r="2.8" fill="'+colMap[p[0]]+'" stroke="var(--panel)" stroke-width="1.5"/>';
+  // 分段构建（支持 null 缺口）
+  function buildSeries(vals, Yf){
+    var segs=[], cur=[];
+    for(var i=0;i<N;i++){
+      if(vals[i]==null||isNaN(vals[i])){ if(cur.length)segs.push(cur); cur=[]; }
+      else cur.push([i, vals[i]]);
+    }
+    if(cur.length)segs.push(cur);
+    var line='', area='', baseY=Yf(0);
+    segs.forEach(function(sg){
+      line += 'M'+X(sg[0][0]).toFixed(1)+' '+Yf(sg[0][1]).toFixed(1);
+      sg.forEach(function(p){ line += 'L'+X(p[0]).toFixed(1)+' '+Yf(p[1]).toFixed(1); });
+      area += 'M'+X(sg[0][0]).toFixed(1)+' '+baseY.toFixed(1);
+      sg.forEach(function(p){ area += 'L'+X(p[0]).toFixed(1)+' '+Yf(p[1]).toFixed(1); });
+      area += 'L'+X(sg[sg.length-1][0]).toFixed(1)+' '+baseY.toFixed(1)+'Z';
     });
-  });
-  // X 轴 tick label
-  var lb='', ls=Math.max(1,Math.ceil(buckets.length/10));
+    return {line:line, area:area};
+  }
+  var sCost=buildSeries(cost, YL);
+  var sMet =buildSeries(metric, YR);
+
+  // 留资柱状（占图区下半段 50% 高度，避免与消耗/转化率折线视觉冲突；柱顶/柱内动态放置数值标签）
+  var lMax = maxOf(leads); if(lMax<=0) lMax = 1;
+  var barBottom = pt + ih;
+  var barAreaH  = ih * 0.50;
+  var bw = Math.max(8, Math.min(28, iw/N*0.55));
+  var lBars='', lLabels='';
   buckets.forEach(function(b,i){
-    if(i%ls && i!==buckets.length-1) return;
-    var lbl = useDaily ? b.slice(5) : b.slice(2);
-    lb+='<text x="'+X(i).toFixed(1)+'" y="'+(H-16)+'" text-anchor="middle" font-size="11" fill="var(--tx3)">'+lbl+'</text>';
+    if(leads[i]==null) return;
+    var x = X(i);
+    var hh = Math.max(1, (leads[i]/lMax) * barAreaH);
+    var yTop = barBottom - hh;
+    lBars += '<rect x="'+(x-bw/2).toFixed(1)+'" y="'+yTop.toFixed(1)+'" width="'+bw.toFixed(1)+'" height="'+hh.toFixed(1)+'" fill="var(--c2)" opacity="0.82" rx="2"/>';
+    if(hh > 16){
+      lLabels += '<text x="'+x.toFixed(1)+'" y="'+(yTop+11).toFixed(1)+'" text-anchor="middle" font-size="10" font-weight="700" fill="#fff" style="paint-order:stroke;stroke:rgba(0,0,0,0.55);stroke-width:3px">'+fmt(leads[i])+'</text>';
+    } else {
+      lLabels += '<text x="'+x.toFixed(1)+'" y="'+(yTop-4).toFixed(1)+'" text-anchor="middle" font-size="10" font-weight="700" fill="var(--c2)" style="paint-order:stroke;stroke:var(--panel);stroke-width:3px">'+fmt(leads[i])+'</text>';
+    }
   });
-  // 透明捕捉层（hover tooltip）：每个 bucket 一个 rect 覆盖 ~ bucket 间距高度
+
+  var g2='';
+  g2+='<path d="'+sCost.area+'" fill="var(--c1)" opacity="0.10"/>';
+  g2+=lBars+lLabels;
+  g2+='<path d="'+sCost.line+'" fill="none" stroke="var(--c1)" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"/>';
+  g2+='<path d="'+sMet.line+'"  fill="none" stroke="var(--c3)" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"/>';
+
+  // 点位 + 数值标签（消耗置上方 / 转化率置下方，白描边避免与线重叠）
+  var dots='', labels='';
+  buckets.forEach(function(b,i){
+    if(cost[i]!=null && !isNaN(cost[i])){
+      var yc=YL(cost[i]);
+      dots+='<circle cx="'+X(i).toFixed(1)+'" cy="'+yc.toFixed(1)+'" r="3" fill="var(--c1)" stroke="var(--panel)" stroke-width="1.5"/>';
+      labels+='<text x="'+X(i).toFixed(1)+'" y="'+(yc-9).toFixed(1)+'" text-anchor="middle" font-size="10" font-weight="700" fill="var(--c1)" style="paint-order:stroke;stroke:var(--panel);stroke-width:3px">¥'+fmtK(cost[i])+'</text>';
+    }
+    if(metric[i]!=null && !isNaN(metric[i])){
+      var yp=YR(metric[i]);
+      dots+='<circle cx="'+X(i).toFixed(1)+'" cy="'+yp.toFixed(1)+'" r="3" fill="var(--c3)" stroke="var(--panel)" stroke-width="1.5"/>';
+      labels+='<text x="'+X(i).toFixed(1)+'" y="'+(yp+17).toFixed(1)+'" text-anchor="middle" font-size="10" font-weight="700" fill="var(--c3)" style="paint-order:stroke;stroke:var(--panel);stroke-width:3px">'+mDef.fmt(metric[i])+'</text>';
+    }
+  });
+
+  // X 轴标签
+  var lb='', ls=Math.max(1,Math.ceil(N/10));
+  buckets.forEach(function(b,i){
+    if(i%ls && i!==N-1) return;
+    var lbl = useDaily ? b.slice(5) : b.slice(2);
+    lb+='<text x="'+X(i).toFixed(1)+'" y="'+(H-20)+'" text-anchor="middle" font-size="11" fill="var(--tx3)">'+lbl+'</text>';
+  });
+
+  // 透明捕捉层（hover 显示留资等明细）
   var hitBoxes='';
   buckets.forEach(function(b,i){
-    var x0 = i>0 ? (X(i-1)+X(i))/2 : X(i) - (i<buckets.length-1 ? (X(i+1)-X(i))/2 : 0);
-    var x1 = i<buckets.length-1 ? (X(i)+X(i+1))/2 : X(i) + (X(i)-X(i-1))/2;
+    var x0 = i>0 ? (X(i-1)+X(i))/2 : X(i) - (i<N-1 ? (X(i+1)-X(i))/2 : 0);
+    var x1 = i<N-1 ? (X(i)+X(i+1))/2 : X(i) + (X(i)-X(i-1))/2;
     if(i===0) x0 = X(i) - (X(1)-X(0))/2;
-    if(i===buckets.length-1) x1 = X(i) + (X(i)-X(i-1))/2;
-    var c = series.cost[i];
-    var l = series.leads[i];
-    var p = series.cpl[i];
+    if(i===N-1) x1 = X(i) + (X(i)-X(i-1))/2;
     hitBoxes+='<rect class="mt-hit" x="'+x0.toFixed(1)+'" y="'+pt+'" width="'+(x1-x0).toFixed(1)+'" height="'+ih+'" fill="transparent" '
-      +'data-b="'+esc(buckets[i])+'" data-c="'+(c==null?'':c)+'" data-l="'+(l==null?'':l)+'" data-p="'+(p==null?'':p)+'" '
+      +'data-b="'+esc(buckets[i])+'" data-c="'+(cost[i]==null?'':cost[i])+'" data-l="'+(leads[i]==null?'':leads[i])+'" data-p="'+(metric[i]==null?'':metric[i])+'" '
       +'onmouseenter="mtShow(event,this)" onmousemove="mtShow(event,this)" onmouseleave="mtHide()"/>';
   });
-  // 鼠标竖线指示
   var vline='<line id="mt-vline" x1="-99" y1="'+pt+'" x2="-99" y2="'+(pt+ih)+'" stroke="var(--pri)" stroke-width="1" stroke-dasharray="3 3" opacity="0"/>';
 
-  var lg=defs.map(function(d){ return '<span><i style="background:'+d.c+'"></i>'+d.t+' <b>'+d.last+'</b></span>'; }).join('');
-  var modeTxt = useDaily ? '按日趋势' : '按月趋势';
-  var spanTxt = useDaily ? ('共 '+buckets.length+' 天') : ('共 '+buckets.length+' 个月');
+  var lastCost=cost[N-1], lastMet=metric[N-1], lastLeads=leads[N-1];
+  var lg='<span><i style="background:var(--c1)"></i>消耗 <b>¥'+(lastCost==null?'—':fmtK(lastCost))+'</b></span>'
+        +'<span><i style="background:var(--c3)"></i>'+mDef.t+' <b>'+(lastMet==null?'—':mDef.fmt(lastMet))+'</b></span>'
+        +'<span><i style="background:var(--c2);opacity:0.82"></i>留资数 <b>'+(lastLeads==null?'—':fmt(lastLeads))+' 条</b></span>';
+  var modeTxt = useDaily ? '按日趋势（双轴 + 留资柱）' : '按月趋势（双轴 + 留资柱）';
+  var spanTxt = useDaily ? ('共 '+N+' 天') : ('共 '+N+' 个月');
+  // 规则说明：按"实际有效数据天数"判断（不是自然日）
+  var ruleTxt = useDaily ? ('按日显示：实际有效数据 '+ds.length+' 天 ≤ 62') : ('按月显示：实际有效数据 '+ds.length+' 天（按月 '+N+' 个）&gt; 62');
   $('#monthTrend').innerHTML=
-    '<div class="pyr-head"><span class="badge">'+modeTxt+'</span><span class="sub" style="font-size:10.5px">'+spanTxt+' · 跨度 '+Math.round(dateSpan)+' 天 · 鼠标悬停查看明细</span></div>'
-    +svgEl('0 0 '+W+' '+H,320)+g+bars+paths+dots+vline+hitBoxes+lb+
-    '<text x="'+(W-pr)+'" y="'+(H-2)+'" text-anchor="end" font-size="10" fill="var(--tx3)">柱：CPL（自身归一化）/ 折线：消耗、留资 · Y 轴为各指标归一化空间</text></svg>'+
-    '<div class="lg">'+lg+'</div>';
-  // 鼠标竖线更新
+    '<div class="pyr-head"><span class="badge">'+modeTxt+'</span><span class="sub" style="font-size:10.5px">'+spanTxt+' · 跨度 '+Math.round(dateSpan)+' 天 · '+ruleTxt+'</span></div>'
+    +svgEl('0 0 '+W+' '+H,330)+g+g2+dots+labels+vline+hitBoxes+lb+'</svg>'
+    +'<div class="lg">'+lg+'</div>';
   $$('#monthTrend .mt-hit').forEach(function(r){
     r.addEventListener('mousemove', function(e){
       var rect = $('#monthTrend svg').getBoundingClientRect();
@@ -1536,6 +1651,33 @@ function renderMonthTrend(){
     });
   });
 }
+
+/* ==================== 月度趋势 右侧指标切换 chips ==================== */
+  var MT_METRICS = [
+  { k:'cpl',  t:'单线索成本',     unit:'¥',  axisUnit:'¥/条',  pick:function(o){return o.cpl;},  fmt:function(v){return v==null?'—':'¥'+fmt(v,0);} },
+  { k:'cvr',  t:'小风车点击留资率', unit:'%', axisUnit:'%',  pick:function(o){return o.cvr;},  fmt:function(v){return v==null?'—':pct(v,1);} },
+  { k:'mvr',  t:'评论留资率',       unit:'%', axisUnit:'%',  pick:function(o){return o.mvr;},  fmt:function(v){return v==null?'—':pct(v,1);} }
+];
+function setMtMetric(k){
+  state.mtMetric = k || 'cpl';
+  if(!MT_METRICS.some(function(x){return x.k===state.mtMetric;})) state.mtMetric = 'cpl';
+  $$('#mtMetric .chip').forEach(function(c){
+    var on = c.dataset.k === state.mtMetric;
+    c.classList.toggle('on', on);
+  });
+  renderMonthTrend();
+}
+function renderMtMetricChips(){
+  var el = document.getElementById('mtMetric');
+  if(!el) return;
+  if(!MT_METRICS.some(function(x){return x.k===state.mtMetric;})) state.mtMetric = 'cpl';
+  el.innerHTML = MT_METRICS.map(function(m){
+    return '<button class="chip'+(m.k===state.mtMetric?' on':'')+'" data-k="'+m.k+'">'+m.t+'</button>';
+  }).join('');
+  $$('#mtMetric .chip').forEach(function(b){
+    b.onclick = function(){ setMtMetric(b.dataset.k); };
+  });
+}
 /* ==================== 月度 × 主播 重做：主播 × 时段 热力图（当前窗口）+ chips ==================== */
 function renderMonthGrid(){
   // 改为：当前筛选范围内，主播 × 时段(5 桶) 的热力图
@@ -1545,11 +1687,13 @@ function renderMonthGrid(){
 
   // 复用 PIVOT_M 作可选指标（与底部热力图共享指标池，但默认 CPL 形成差异）
   var M={
-    leads:{t:'线索量',     f:function(a){return a.leads;}, fmt:function(v){return fmt(v);},       rev:false},
-    cpl:  {t:'单线索成本', f:function(a){return a.cpl;},   fmt:function(v){return v==null?'—':'¥'+fmt(v,0);}, rev:true},
-    ctr:  {t:'小风车点击率',f:function(a){return a.ctr;},  fmt:function(v){return v==null?'—':pct(v,1);}, rev:false},
-    cph:  {t:'小时消耗',   f:function(a){return a.cph;},   fmt:function(v){return v==null?'—':'¥'+fmt(v,0);}, rev:true},
-    lps:  {t:'场均留资',   f:function(a){return a.lps;},   fmt:function(v){return v==null?'—':fmt(v,1);}, rev:false}
+    leads:{t:'线索量',       f:function(a){return a.leads;}, fmt:function(v){return fmt(v);},           rev:false},
+    cpl:  {t:'单线索成本',   f:function(a){return a.cpl;},   fmt:function(v){return v==null?'—':'¥'+fmt(v,0);}, rev:true},
+    ctr:  {t:'小风车点击率',  f:function(a){return a.ctr;},  fmt:function(v){return v==null?'—':pct(v,1);}, rev:false},
+    cph:  {t:'小时消耗',     f:function(a){return a.cph;},   fmt:function(v){return v==null?'—':'¥'+fmt(v,0);}, rev:true},
+    lps:  {t:'场均留资',     f:function(a){return a.lps;},   fmt:function(v){return v==null?'—':fmt(v,1);}, rev:false},
+    cvr:  {t:'小风车点击转化率', f:function(a){return a.cvr;}, fmt:function(v){return v==null?'—':pct(v,1);}, rev:false},
+    mvr:  {t:'评论留资率',   f:function(a){return a.mvr;},   fmt:function(v){return v==null?'—':pct(v,1);}, rev:false}
   };
   // 默认 CPL（与底部热力图默认 leads 形成差异）
   if(!M[state.monthMetric]) state.monthMetric = 'cpl';
@@ -1720,6 +1864,10 @@ function renderAll(){
   renderPivotFunnel(); renderMatrix(); renderMonthTrend(); renderMonthGrid(); renderHeat();
   renderDetail(); renderCross(); updateFocusBar();
 }
+function renderAllAndChips(){
+  renderAll();
+  renderMtMetricChips();
+}
 
 /* ==================== 初始化 ==================== */
 function initUI(){
@@ -1767,8 +1915,8 @@ function initUI(){
   var MD=[['wd','星期'],['p','场次']];
   $('#matrixDim').innerHTML=MD.map(function(x){ return '<button class="chip'+(x[0]===state.pivotDim?' on':'')+'" data-k="'+x[0]+'">'+x[1]+'</button>'; }).join('');
   $$('#matrixDim .chip').forEach(function(b){ b.onclick=function(){ $$('#matrixDim .chip').forEach(function(x){x.classList.remove('on');}); b.classList.add('on'); state.pivotDim=b.dataset.k; renderMatrix(); }; });
-  // 月度网格：指标切换（线索量 / 单线索成本 / 小风车点击率）
-  var MM=[['leads','线索量'],['cpl','单线索成本'],['ctr','小风车点击率']];
+  // 月度网格：指标切换（线索量 / 单线索成本 / 小风车点击率 / 小风车点击转化率 / 评论留资率）
+  var MM=[['leads','线索量'],['cpl','单线索成本'],['ctr','小风车点击率'],['cvr','小风车点击转化率'],['mvr','评论留资率']];
   $('#monthMetric').innerHTML=MM.map(function(x){ return '<button class="chip'+(x[0]===state.monthMetric?' on':'')+'" data-k="'+x[0]+'">'+x[1]+'</button>'; }).join('');
   $$('#monthMetric .chip').forEach(function(b){ b.onclick=function(){ $$('#monthMetric .chip').forEach(function(x){x.classList.remove('on');}); b.classList.add('on'); state.monthMetric=b.dataset.k; renderMonthGrid(); }; });
   // 矩阵 / 月度网格 点击聚焦（事件委托）
@@ -1967,6 +2115,7 @@ function boot(d){
   $('#d1').min=DATA_WINDOW_START; $('#d1').max=d.meta.dateMax;
   $('#d2').min=d.meta.dateMin; $('#d2').max=d.meta.dateMax;
   renderAll();
+  renderMtMetricChips();
   $$('#quickRange .chip')[2].classList.add('on');
 }
 
