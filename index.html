@@ -2353,11 +2353,14 @@ function initUI(){
   // 时段
   var sl={}; SESS.forEach(function(s){ sl[s.p]=1; });
   $('#fSlot').innerHTML='<option value="">全部时段</option>'+Object.keys(sl).map(function(s){ return '<option value="'+esc(s)+'">'+esc(s)+'</option>'; }).join('');
-  // 指标切换
-  $('#trendMetric').innerHTML=TREND_M.map(function(m,i){ return '<button class="chip'+(i===0?' on':'')+'" data-k="'+m.k+'">'+m.t+'</button>'; }).join('');
-  $$('#trendMetric .chip').forEach(function(b){
-    b.onclick=function(){ $$('#trendMetric .chip').forEach(function(x){x.classList.remove('on');}); b.classList.add('on'); state.trend=b.dataset.k; renderTrend(); };
-  });
+  // 指标切换（#trendMetric 容器已在 3.0 概览重构中移除，这里做空值守卫，避免阻塞后续初始化）
+  var trendMetricEl = $('#trendMetric');
+  if(trendMetricEl){
+    trendMetricEl.innerHTML=TREND_M.map(function(m,i){ return '<button class="chip'+(i===0?' on':'')+'" data-k="'+m.k+'">'+m.t+'</button>'; }).join('');
+    $$('#trendMetric .chip').forEach(function(b){
+      b.onclick=function(){ $$('#trendMetric .chip').forEach(function(x){x.classList.remove('on');}); b.classList.add('on'); state.trend=b.dataset.k; renderTrend(); };
+    });
+  }
   $('#pivotMetric').innerHTML=PIVOT_M.map(function(m,i){ return '<button class="chip'+(i===0?' on':'')+'" data-k="'+m.k+'">'+m.t+'</button>'; }).join('');
   $$('#pivotMetric .chip').forEach(function(b){
     b.onclick=function(){ $$('#pivotMetric .chip').forEach(function(x){x.classList.remove('on');}); b.classList.add('on'); state.pivot=b.dataset.k; renderHeat(); };
