@@ -424,17 +424,33 @@ table.ctab tr.hl td{background:var(--panel2)}
 .ov3-radar-section{background:#fff;border:1px solid var(--ov3-border);border-radius:22px;padding:22px 26px;box-shadow:var(--ov3-shadow);margin-bottom:18px}
 .ov3-radar-section h3{font-size:15px;font-weight:800;margin:0 0 4px;color:#0f172a}
 .ov3-radar-section .sub{color:#94a3b8;font-size:12px;margin-bottom:18px}
-.ov3-radar-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.ov3-radar-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
 .ov3-radar-card{background:#fff;border:1px solid var(--ov3-border);border-radius:18px;padding:18px;box-shadow:var(--ov3-shadow);transition:transform .2s,box-shadow .2s}
 .ov3-radar-card:hover{transform:translateY(-2px);box-shadow:var(--ov3-shadow-hover)}
 .ov3-radar-card .rh{display:flex;align-items:center;gap:10px;margin-bottom:10px}
 .ov3-radar-card .rh .dot{width:10px;height:10px;border-radius:50%;background:var(--c)}
 .ov3-radar-card .rh b{font-size:13px;font-weight:700;color:#0f172a}
 .ov3-radar-card .rh .score{margin-left:auto;font-size:18px;font-weight:800;color:#2563eb}
-.ov3-radar-card svg{width:100%;height:160px;display:block}
+.ov3-radar-card svg{width:100%;height:236px;display:block}
 .ov3-radar-card .dims{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
 .ov3-radar-card .dims span{font-size:10px;color:#64748b;background:#f8fafc;padding:3px 8px;border-radius:999px;border:1px solid #f1f5f9}
 
+.ov3-trend-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:6px}
+.ov3-mini{background:#fff;border:1px solid #eef2f7;border-radius:14px;padding:10px 12px 6px}
+.ov3-mini-svg{width:100%;height:auto;display:block}
+.ov3-trend-note{font-size:11px;color:#94a3b8;margin-top:10px;line-height:1.5}
+.ov3-trend-cap{font-size:12px;color:#64748b}
+.ov3-radar-contrib{margin-top:8px}
+.ov3-radar-contrib .rc-bar{height:8px;background:#f1f5f9;border-radius:4px;overflow:hidden}
+.ov3-radar-contrib .rc-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,#60a5fa,#2563eb)}
+.ov3-radar-contrib .rc-meta{display:flex;justify-content:space-between;font-size:10.5px;color:#64748b;margin-top:4px}
+.ov3-radar-sum{font-size:11.5px;color:#475569;line-height:1.5;margin-top:8px;background:#f8fafc;border-radius:8px;padding:8px 10px}
+.ov3-funnel-svg{display:block;margin:0 auto;max-width:680px;width:100%;height:auto}
+.ov3-funnel-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:12px;text-align:center}
+.ov3-funnel-stats .fs{background:#f8fafc;border-radius:10px;padding:8px 4px}
+.ov3-funnel-stats .fs-v{font-size:16px;font-weight:800;color:#0f172a}
+.ov3-funnel-stats .fs-l{font-size:10.5px;color:#94a3b8;margin-top:2px}
+@media(max-width:680px){.ov3-trend-grid{grid-template-columns:1fr}.ov3-funnel-stats{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:1200px){
   .ov3-hero-bento{grid-template-columns:1fr}
   .ov3-insights{grid-template-columns:repeat(2,1fr)}
@@ -561,24 +577,17 @@ window.__PRELOADED__={"meta": {"source": "飞书多维表格 · 迈科代理直�
     <div class="ov3-trend-card">
       <div class="ov3-trend-head">
         <h3>全局趋势 · 多维指标关联</h3>
-        <span class="sub">点击图例可隐藏/显示 · 十字光标查看每日详情</span>
+        <span class="sub">4 张趋势组合图 · 悬停查看每日实际值</span>
         <div class="sp"></div>
         <div class="ov3-trend-legend" id="trendLegend3"></div>
       </div>
       <div id="trendChart3"></div>
     </div>
 
-    <div class="ov3-mid">
-      <div class="ov3-card">
-        <h3>主播贡献矩阵</h3>
-        <div class="sub">按线索贡献排名 · 进度条=线索量 · 下字=消耗 / CPL</div>
-        <div id="shareChart3"></div>
-      </div>
-      <div class="ov3-card">
-        <h3>转化漏斗</h3>
-        <div class="sub">场观 → 点击 → 留资 · 悬停查看转化/流失</div>
-        <div class="ov3-funnel" id="funnelChart3"></div>
-      </div>
+    <div class="ov3-card">
+      <h3>转化漏斗</h3>
+      <div class="sub">场观 → 点击 → 留资 · 悬停查看转化/流失</div>
+      <div class="ov3-funnel" id="funnelChart3"></div>
     </div>
 
     <div id="ovRadar3"></div>
@@ -904,6 +913,7 @@ function renderHero3(){
   var delta=prevTotal?((total-prevTotal)/prevTotal*100):0;
   var pct=target?Math.min(100,total/target.leads*100):0;
   var remain=target?Math.max(0,target.leads-total):0;
+  var monthLabel=cur?parseInt(cur.slice(5),10)+'月':'';
   var daysSpan=Math.max(1,dateDiff(state.d1||DATA.meta.dateMin, state.d2||DATA.meta.dateMax));
   var perDay=total/daysSpan;
   var sessions=VIEW.length;
@@ -922,7 +932,7 @@ function renderHero3(){
       '<div class="big-num">'+fmt(total)+'<span class="unit">条</span></div>'+
       '<div class="hero-meta">'+
         '<span class="delta '+(delta>=0?'':'down')+'">'+(delta>=0?'▲':'▼')+' '+Math.abs(delta).toFixed(1)+'% <i>较上期</i></span>'+
-        '<span class="target-pill">目标 <b>'+(target?fmt(target.leads):'—')+'</b> 条 · 剩余 <b>'+fmt(remain)+'</b> 条</span>'+
+        '<span class="target-pill">'+monthLabel+'线索目标：目标 <b>'+(target?fmt(target.leads):'—')+'</b> 条 · 剩余 <b>'+fmt(remain)+'</b> 条 · 达成率 <b>'+pct.toFixed(1)+'%</b></span>'+
       '</div>'+
       '<div class="target-bar-wrap">'+
         '<div class="target-bar-label"><span>目标完成度</span><b>'+pct.toFixed(1)+'%</b></div>'+
@@ -939,8 +949,9 @@ function renderHeroGrid3(){
   var totalLeads=VIEW.reduce(function(s,x){return s+x.leads;},0);
   var cpl=totalLeads?totalCost/totalLeads:0;
   var sessions=VIEW.length;
-  var clicks=VIEW.reduce(function(s,x){return s+x.clicks;},0);
-  var cr=clicks?totalLeads/clicks*100:0;
+  var views=VIEW.reduce(function(s,x){return s+(x.views||0);},0);
+  var clicks=VIEW.reduce(function(s,x){return s+(x.clicks||0);},0);
+  var ctr=views?clicks/views*100:0;                 // 小风车点击率 = 点击 / 场观
 
   // 各指标趋势序列
   var byD={}; VIEW.forEach(function(s){(byD[s.d]=byD[s.d]||[]).push(s);});
@@ -948,13 +959,13 @@ function renderHeroGrid3(){
   var costS=dates.map(function(d){return byD[d].reduce(function(s,x){return s+x.cost;},0);});
   var cplS=dates.map(function(d){var g=agg(byD[d]); return g.leads?g.cost/g.leads:null;});
   var sessS=dates.map(function(d){return byD[d].length;});
-  var crS=dates.map(function(d){var g=agg(byD[d]); return g.clicks?g.leads/g.clicks*100:null;});
+  var ctrS=dates.map(function(d){var g=agg(byD[d]); return g.ctr!=null?g.ctr*100:null;});
 
   var cards=[
     {lab:'总消耗', val:'¥'+fmtK(totalCost), sub:'投入规模', icon:'💰', bg:'#eff6ff', c:'#2563eb', glow:'rgba(37,99,235,.2)', s:costS, sc:'#2563eb'},
     {lab:'单线索成本', val:'¥'+fmt(cpl,0), sub:'成本效率', icon:'⚡', bg:'#fef3c7', c:'#d97706', glow:'rgba(217,119,6,.2)', s:cplS, sc:'#f59e0b'},
     {lab:'直播场次', val:fmt(sessions), sub:'覆盖 '+fmt(dateDiff(state.d1,state.d2)+1)+' 天', icon:'🎥', bg:'#ecfdf5', c:'#059669', glow:'rgba(5,150,105,.2)', s:sessS, sc:'#10b981'},
-    {lab:'留资转化', val:cr.toFixed(1)+'%', sub:'点击 → 留资', icon:'🎯', bg:'#f5f3ff', c:'#7c3aed', glow:'rgba(124,58,237,.2)', s:crS, sc:'#8b5cf6'}
+    {lab:'小风车点击率', val:ctr.toFixed(1)+'%', sub:'点击 / 场观', icon:'🎯', bg:'#f5f3ff', c:'#7c3aed', glow:'rgba(124,58,237,.2)', s:ctrS, sc:'#8b5cf6'}
   ];
   $('#ovHeroGrid3').innerHTML = cards.map(function(c){
     return '<div class="ov3-hcard" style="--glow:'+c.glow+'">'+
@@ -1068,151 +1079,97 @@ function renderTargetBoard3(){
     '</div>';
 }
 
-/* ---------- 多维度趋势图 ---------- */
-var TREND3_SERIES=[
-  {k:'leads',label:'线索量',color:'#2563eb',axis:'left',type:'bar',fmt:function(v){return fmt(v)+' 条';},f:function(g){return g.leads;}},
-  {k:'cost',label:'消耗',color:'#10b981',axis:'left',type:'line',fmt:function(v){return '¥'+fmtK(v);},f:function(g){return g.cost;}},
-  {k:'cpl',label:'单线索成本',color:'#f59e0b',axis:'right',type:'line',fmt:function(v){return '¥'+fmt(v,0);},f:function(g){return g.leads?g.cost/g.leads:null;}},
-  {k:'lph',label:'小时产量',color:'#8b5cf6',axis:'right',type:'line',fmt:function(v){return fmt(v,1)+' 条/h';},f:function(g){var h=g.durMin?g.durMin/60:g.sessions; return h?g.leads/h:null;}},
-  {k:'views',label:'场观人数',color:'#06b6d4',axis:'right',type:'line',fmt:function(v){return fmt(v);},f:function(g){return g.views;}},
-  {k:'clicks',label:'小风车点击',color:'#ef4444',axis:'right',type:'line',fmt:function(v){return fmt(v);},f:function(g){return g.clicks;}}
+/* ---------- 多维度趋势图（4 张组合小图） ---------- */
+var TREND3_MINI=[
+  {title:'线索量 · 消耗 · 单线索成本', items:[
+    {k:'leads',label:'线索量',color:'#2563eb',bar:true, f:function(g){return g.leads;}, fmt:function(v){return fmt(v)+' 条';}, short:function(v){return fmtCompact(v);}},
+    {k:'cost', label:'消耗',  color:'#10b981', f:function(g){return g.cost;}, fmt:function(v){return '¥'+fmtK(v);}, short:function(v){return '¥'+fmtCompact(v);}},
+    {k:'cpl',  label:'单线索成本',color:'#f59e0b', f:function(g){return g.leads?g.cost/g.leads:null;}, fmt:function(v){return '¥'+fmt(v,0);}, short:function(v){return '¥'+fmt(v,0);}}
+  ]},
+  {title:'单线索成本 · 小时产量 · 小风车点击率', items:[
+    {k:'cpl', label:'单线索成本',color:'#f59e0b', f:function(g){return g.leads?g.cost/g.leads:null;}, fmt:function(v){return '¥'+fmt(v,0);}, short:function(v){return '¥'+fmt(v,0);}},
+    {k:'lph', label:'小时产量',color:'#8b5cf6', f:function(g){var h=g.durMin?g.durMin/60:g.sessions; return h?g.leads/h:null;}, fmt:function(v){return fmt(v,1)+' 条/h';}, short:function(v){return fmt(v,1);}},
+    {k:'ctr', label:'小风车点击率',color:'#ef4444', f:function(g){return g.ctr;}, fmt:function(v){return pct(v,2);}, short:function(v){return (v*100).toFixed(1)+'%';}}
+  ]},
+  {title:'单线索成本 · 线索量 · 小风车点击率 · 点击转化率', items:[
+    {k:'leads',label:'线索量',color:'#2563eb',bar:true, f:function(g){return g.leads;}, fmt:function(v){return fmt(v)+' 条';}, short:function(v){return fmtCompact(v);}},
+    {k:'cpl',  label:'单线索成本',color:'#f59e0b', f:function(g){return g.leads?g.cost/g.leads:null;}, fmt:function(v){return '¥'+fmt(v,0);}, short:function(v){return '¥'+fmt(v,0);}},
+    {k:'ctr',  label:'小风车点击率',color:'#ef4444', f:function(g){return g.ctr;}, fmt:function(v){return pct(v,2);}, short:function(v){return (v*100).toFixed(1)+'%';}},
+    {k:'cvr',  label:'点击转化率',color:'#10b981', f:function(g){return g.cvr;}, fmt:function(v){return pct(v,1);}, short:function(v){return (v*100).toFixed(1)+'%';}}
+  ]},
+  {title:'线索量 · 点击转化率 · 评论留资率', items:[
+    {k:'leads',label:'线索量',color:'#2563eb',bar:true, f:function(g){return g.leads;}, fmt:function(v){return fmt(v)+' 条';}, short:function(v){return fmtCompact(v);}},
+    {k:'cvr',  label:'点击转化率',color:'#10b981', f:function(g){return g.cvr;}, fmt:function(v){return pct(v,1);}, short:function(v){return (v*100).toFixed(1)+'%';}},
+    {k:'mvr',  label:'评论留资率',color:'#06b6d4', f:function(g){return g.mvr;}, fmt:function(v){return pct(v,1);}, short:function(v){return (v*100).toFixed(1)+'%';}}
+  ]}
 ];
-var trend3Active=['leads','cost','cpl','lph'];
 
 function renderTrend3(){
   var byD={}; VIEW.forEach(function(s){(byD[s.d]=byD[s.d]||[]).push(s);});
   var dates=Object.keys(byD).sort();
   if(dates.length<2){ $('#trendChart3').innerHTML='<div class="empty">数据不足，无法绘制趋势</div>'; return; }
-  // 超过90天按周聚合
   var agK=dates, agV=dates.map(function(d){return byD[d];}), mode='日';
   if(dates.length>92){
     mode='周'; var wk={};
-    dates.forEach(function(d){
-      var dt=new Date(d), day=(dt.getDay()+6)%7;
-      var mon=new Date(dt.getTime()-day*864e5).toISOString().slice(0,10);
-      (wk[mon]=wk[mon]||[]).push.apply(wk[mon], byD[d]);
-    });
+    dates.forEach(function(d){ var dt=new Date(d), day=(dt.getDay()+6)%7; var mon=new Date(dt.getTime()-day*864e5).toISOString().slice(0,10); (wk[mon]=wk[mon]||[]).push.apply(wk[mon],byD[d]); });
     agK=Object.keys(wk).sort(); agV=agK.map(function(k){return wk[k];});
   }
-  var W=1100,H=360,pl=62,pr=52,pt=20,pb=52;
-  var iw=W-pl-pr, ih=H-pt-pb;
-
-  var series=TREND3_SERIES.filter(function(s){return trend3Active.indexOf(s.k)>=0;});
-  var data=series.map(function(s){
-    return {k:s.k,label:s.label,color:s.color,axis:s.axis,type:s.type,fmt:s.fmt,values:agV.map(function(rows){return s.f(agg(rows));})};
-  });
-
-  // 计算左右轴范围
-  var leftVals=[], rightVals=[];
-  data.forEach(function(s){
-    s.values.forEach(function(v){ if(v!=null){ if(s.axis==='left') leftVals.push(v); else rightVals.push(v); } });
-  });
-  var leftR=rangeWithPad(leftVals), rightR=rangeWithPad(rightVals);
-
-  var X=function(i){return pl+(agK.length<2?iw/2:i*iw/(agK.length-1));};
-  var YL=function(v){return pt+ih-((v-leftR.min)/(leftR.max-leftR.min||1))*ih;};
-  var YR=function(v){return pt+ih-((v-rightR.min)/(rightR.max-rightR.min||1))*ih;};
-
-  var svg='<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="xMidYMid meet">';
-  // 网格
-  for(var i=0;i<=4;i++){
-    var y=pt+ih*i/4;
-    svg+='<line x1="'+pl+'" y1="'+y.toFixed(1)+'" x2="'+(W-pr)+'" y2="'+y.toFixed(1)+'" stroke="#f1f5f9" stroke-width="1"/>';
-    var lv=leftR.max-(leftR.max-leftR.min)*i/4;
-    svg+='<text x="'+(pl-8)+'" y="'+(y+4).toFixed(1)+'" text-anchor="end" font-size="11" fill="#64748b">'+fmtCompact(lv)+'</text>';
-    if(rightR.max>rightR.min){
-      var rv=rightR.max-(rightR.max-rightR.min)*i/4;
-      svg+='<text x="'+(W-pr+8)+'" y="'+(y+4).toFixed(1)+'" text-anchor="start" font-size="11" fill="#94a3b8">'+fmtCompact(rv)+'</text>';
-    }
-  }
-  // 柱状图（仅一个bar系列，放最底层）
-  var barS=data.filter(function(s){return s.type==='bar' && s.axis==='left'})[0];
-  if(barS){
-    var bw=Math.max(4,Math.min(40,iw/agK.length*0.55));
-    barS.values.forEach(function(v,i){ if(v!=null){
-      var x=X(i), y=YL(v), h=(pt+ih)-y;
-      svg+='<rect class="ov3-trend-rect" data-idx="'+i+'" x="'+(x-bw/2).toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+bw.toFixed(1)+'" height="'+h.toFixed(1)+'" fill="'+barS.color+'" opacity=".85" rx="4"/>';
-    }});
-  }
-  // 折线
-  data.forEach(function(s){ if(s.type==='line'){
-    var segs=[],cur=[];
-    s.values.forEach(function(v,i){ if(v==null){ if(cur.length)segs.push(cur); cur=[]; } else { var y=s.axis==='left'?YL(v):YR(v); cur.push([X(i),y,i,v]); } });
-    if(cur.length) segs.push(cur);
-    segs.forEach(function(sg){
-      var d='M'+sg.map(function(p){return p[0].toFixed(1)+' '+p[1].toFixed(1);}).join('L');
-      svg+='<path d="'+d+'" fill="none" stroke="'+s.color+'" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>';
-    });
-    // 点
-    var step=Math.max(1,Math.ceil(agK.length/50));
-    cur=[]; s.values.forEach(function(v,i){ if(v!=null && i%step===0) cur.push([X(i),s.axis==='left'?YL(v):YR(v),i,v]); });
-    cur.forEach(function(p){
-      svg+='<circle class="ov3-trend-dot" data-idx="'+p[2]+'" cx="'+p[0].toFixed(1)+'" cy="'+p[1].toFixed(1)+'" r="3.5" fill="#fff" stroke="'+s.color+'" stroke-width="2"/>';
-    });
-  }});
-  // X轴标签
-  var ls=Math.max(1,Math.ceil(agK.length/10));
-  agK.forEach(function(k,i){ if(i%ls===0 || i===agK.length-1){
-    svg+='<text x="'+X(i).toFixed(1)+'" y="'+(H-20)+'" text-anchor="middle" font-size="11" fill="#64748b">'+k.slice(5)+'</text>';
-  }});
-  // 交互层
-  svg+='<rect id="trend3Hit" x="'+pl+'" y="'+pt+'" width="'+iw+'" height="'+ih+'" fill="transparent" style="cursor:crosshair"/>';
-  svg+='<line id="trend3Cursor" x1="0" y1="'+pt+'" x2="0" y2="'+(pt+ih)+'" stroke="#94a3b8" stroke-width="1" stroke-dasharray="4 4" style="display:none"/>';
-  svg+='</svg>';
-
-  $('#trendChart3').innerHTML = svg;
-  attachTrend3Tip(agK,data,X,YL,YR,pl,pr,iw);
+  var html='<div class="ov3-trend-grid">';
+  TREND3_MINI.forEach(function(m){ html+='<div class="ov3-mini">'+miniTrend(m.title,m.items,agK,agV)+'</div>'; });
+  html+='</div><div class="ov3-trend-note">各小图按自身指标峰值归一化展示趋势（柱=量级 · 线=率/成本），悬停查看每日实际值 · 默认近30天</div>';
+  $('#trendChart3').innerHTML=html;
 }
 
-function rangeWithPad(vals){
-  vals=vals.filter(function(v){return v!=null;});
-  if(!vals.length) return {min:0,max:1};
-  var mn=Math.min.apply(null,vals), mx=Math.max.apply(null,vals);
-  if(mx===mn){ mx=mx*1.2+1; mn=Math.max(0,mn*0.8-1); }
-  var pad=(mx-mn)*0.1;
-  return {min:Math.max(0,mn-pad),max:mx+pad};
+function miniTrend(title, items, agK, agV){
+  var n=agK.length;
+  var W=720,H=300,pl=12,pr=12,pt=52,pb=26, iw=W-pl-pr, ih=H-pt-pb;
+  var X=function(i){ return pl+(n<2?iw/2:i*iw/(n-1)); };
+  var ser=items.map(function(d){ return {d:d, raw:agV.map(function(rows){ return d.f(agg(rows)); })}; });
+  var svg='<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="xMidYMid meet" class="ov3-mini-svg">';
+  svg+='<text x="'+pl+'" y="21" font-size="13" font-weight="800" fill="#0f172a">'+esc(title)+'</text>';
+  // 紧凑图例（右对齐）
+  var lx=W-pr;
+  items.slice().reverse().forEach(function(d){
+    var tw=d.label.length*11+18; lx-=tw;
+    svg+='<g transform="translate('+lx.toFixed(1)+',8)"><rect width="10" height="10" rx="2" y="0" fill="'+d.color+'"/><text x="14" y="9.5" font-size="10.5" fill="#475569">'+d.label+'</text></g>';
+  });
+  // 网格
+  for(var i=0;i<=4;i++){ var y=pt+ih*i/4; svg+='<line x1="'+pl+'" y1="'+y.toFixed(1)+'" x2="'+(W-pr)+'" y2="'+y.toFixed(1)+'" stroke="#f1f5f9" stroke-width="1"/>'; }
+  ser.forEach(function(S){
+    var vals=S.raw.filter(function(v){return v!=null;}); if(!vals.length) return;
+    var mn=Math.min.apply(null,vals), mx=Math.max.apply(null,vals);
+    if(mx===mn){ mx=(mx||1)*1.2; mn=0; }
+    var norm=function(v){ return v==null?null:((v-mn)/(mx-mn||1)); };
+    if(S.d.bar){
+      var bw=Math.max(3,Math.min(28,iw/n*0.6));
+      S.raw.forEach(function(v,i){ if(v==null) return;
+        var x=X(i), t=norm(v), yy=pt+ih-t*ih, hh=(pt+ih)-yy;
+        svg+='<rect x="'+(x-bw/2).toFixed(1)+'" y="'+yy.toFixed(1)+'" width="'+bw.toFixed(1)+'" height="'+hh.toFixed(1)+'" rx="3" fill="'+S.d.color+'" opacity=".85"><title>'+agK[i]+'\n'+S.d.label+' '+S.d.fmt(v)+'</title></rect>';
+        if(n<=60){ svg+='<text x="'+x.toFixed(1)+'" y="'+(Math.max(14,yy-5)).toFixed(1)+'" text-anchor="middle" font-size="7.5" font-weight="700" fill="'+S.d.color+'">'+S.d.short(v)+'</text>'; }
+      });
+    } else {
+      var segs=[],cur=[];
+      S.raw.forEach(function(v,i){ if(v==null){ if(cur.length)segs.push(cur); cur=[]; } else { var t=norm(v); cur.push([X(i),pt+ih-t*ih,i,v]); } });
+      if(cur.length) segs.push(cur);
+      segs.forEach(function(sg){ svg+='<path d="M'+sg.map(function(p){return p[0].toFixed(1)+' '+p[1].toFixed(1);}).join('L')+'" fill="none" stroke="'+S.d.color+'" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>'; });
+      var step=Math.max(1,Math.ceil(n/ (n<=60? n : 10)));
+      S.raw.forEach(function(v,i){ if(v==null) return;
+        var t=norm(v), x=X(i), y=pt+ih-t*ih;
+        var show=(n<=60)||(i%step===0)||i===n-1;
+        svg+='<circle cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" r="2.6" fill="#fff" stroke="'+S.d.color+'" stroke-width="1.6"><title>'+agK[i]+'\n'+S.d.label+' '+S.d.fmt(v)+'</title></circle>';
+        if(show){ var above=(t<0.82), ly=above?y-7:y+12; svg+='<text x="'+x.toFixed(1)+'" y="'+ly.toFixed(1)+'" text-anchor="middle" font-size="7" fill="'+S.d.color+'">'+S.d.short(v)+'</text>'; }
+      });
+    }
+  });
+  var ls=Math.max(1,Math.ceil(n/8));
+  agK.forEach(function(k,i){ if(i%ls===0||i===n-1){ svg+='<text x="'+X(i).toFixed(1)+'" y="'+(H-6)+'" text-anchor="middle" font-size="8.5" fill="#94a3b8">'+k.slice(5)+'</text>'; } });
+  svg+='</svg>';
+  return svg;
 }
 function fmtCompact(v){ if(v>=10000) return (v/10000).toFixed(1)+'w'; if(v>=1000) return (v/1000).toFixed(1)+'k'; return Math.round(v).toString(); }
 
-function attachTrend3Tip(dates,series,X,YL,YR,pl,pr,iw){
-  var tip=$('#ov3TrendTip'); if(!tip){ tip=document.createElement('div'); tip.id='ov3TrendTip'; tip.className='ov3-tip'; document.body.appendChild(tip); }
-  var hit=$('#trend3Hit'), cursor=$('#trend3Cursor');
-  if(!hit) return;
-  var svg=hit.closest('svg');
-  var move=function(e){
-    var rect=svg.getBoundingClientRect();
-    var x=e.clientX-rect.left; var rx=x*1100/rect.width;
-    if(rx<pl || rx>1100-pr){ cursor.style.display='none'; tip.style.display='none'; return; }
-    var i=Math.round((rx-pl)/(1100-pl-pr)*(dates.length-1));
-    i=Math.max(0,Math.min(dates.length-1,i));
-    cursor.setAttribute('x1',X(i).toFixed(1)); cursor.setAttribute('x2',X(i).toFixed(1)); cursor.style.display='block';
-    var html='<div class="tt">'+dates[i]+'</div>';
-    series.forEach(function(s){
-      var v=s.values[i];
-      if(v==null) return;
-      html+='<div class="tr"><i style="background:'+s.color+'"></i><span>'+s.label+'</span><b>'+s.fmt(v)+'</b></div>';
-    });
-    tip.innerHTML=html; tip.style.display='block';
-    tip.style.left=(e.clientX+14)+'px'; tip.style.top=(e.clientY-tip.offsetHeight/2)+'px';
-  };
-  var leave=function(){ cursor.style.display='none'; tip.style.display='none'; };
-  hit.addEventListener('mousemove',move); hit.addEventListener('mouseleave',leave);
-  hit.addEventListener('touchmove',function(e){ move(e.touches[0]); },{passive:true});
-}
-
 function renderTrendLegend3(){
-  $('#trendLegend3').innerHTML=TREND3_SERIES.map(function(s){
-    var on=trend3Active.indexOf(s.k)>=0;
-    return '<span class="item '+(on?'':'off')+'" data-k="'+s.k+'"><i style="background:'+s.color+'"></i>'+s.label+'</span>';
-  }).join('');
-  $$('#trendLegend3 .item').forEach(function(el){
-    el.onclick=function(){
-      var k=el.dataset.k, idx=trend3Active.indexOf(k);
-      if(idx>=0){ if(trend3Active.length>1) trend3Active.splice(idx,1); }
-      else { trend3Active.push(k); }
-      renderTrendLegend3(); renderTrend3();
-    };
-  });
+  $('#trendLegend3').innerHTML='<span class="ov3-trend-cap">4 张趋势组合图 · 按自然日聚合 · 柱=量级指标 / 线=率·成本指标</span>';
 }
 
 /* ---------- 主播贡献矩阵 ---------- */
@@ -1240,24 +1197,60 @@ function renderFunnel3(){
   var views=VIEW.reduce(function(s,x){return s+(x.views||0);},0);
   var clicks=VIEW.reduce(function(s,x){return s+(x.clicks||0);},0);
   var leads=VIEW.reduce(function(s,x){return s+(x.leads||0);},0);
-  var steps=[
-    {label:'场观人数',val:views,color:'linear-gradient(90deg,#60a5fa,#2563eb)'},
-    {label:'小风车点击',val:clicks,color:'linear-gradient(90deg,#c084fc,#8b5cf6)'},
-    {label:'留资线索',val:leads,color:'linear-gradient(90deg,#34d399,#10b981)'}
+  if(views===0 && clicks===0 && leads===0){ $('#funnelChart3').innerHTML='<div class="empty">当前范围无漏斗数据</div>'; return; }
+  var stages=[
+    {label:'场观人数',val:views,sub:'曝光入口',color1:'#3b82f6',color2:'#60a5fa'},
+    {label:'小风车点击',val:clicks,sub:'互动转化',color1:'#8b5cf6',color2:'#a78bfa'},
+    {label:'留资线索',val:leads,sub:'获客结果',color1:'#10b981',color2:'#34d399'}
   ];
-  var max=Math.max(steps[0].val,1);
-  $('#funnelChart3').innerHTML=steps.map(function(s,i){
-    var w=Math.max(28, (s.val/max*100));
-    var next=steps[i+1];
-    var rate=next && s.val? (next.val/s.val*100):0;
-    var drop=next? (100-rate):0;
-    return '<div class="ov3-fstep">'+
-      '<div class="fbar" style="width:'+w+'%;margin:0 auto;background:'+s.color+'">'+fmt(s.val)+'</div>'+
-      '<div class="flab"><span>'+s.label+'</span>'+(next?'<span>转化 <b>'+rate.toFixed(1)+'%</b> · 流失 <b>'+drop.toFixed(1)+'%</b></span>':'')+'</div>'+
-    '</div>'+(next?'<div class="ov3-farrow">▼</div>':'');
-  }).join('');
+  var top=Math.max(views,1);
+  var W=640,H=260,pad=34,barH=36,gap=44,maxBar=560;
+  var svg='<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="xMidYMid meet" class="ov3-funnel-svg">';
+  svg+='<defs>';
+  stages.forEach(function(s,i){ svg+='<linearGradient id="fg'+i+'" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="'+s.color1+'"/><stop offset="1" stop-color="'+s.color2+'"/></linearGradient>'; });
+  svg+='</defs>';
+  var y=pad;
+  stages.forEach(function(s,i){
+    var ratio=s.val/top;
+    var bw=Math.max(6, ratio*maxBar);
+    var x=(W-bw)/2;
+    var cyc=y+barH/2;
+    // 条形（居中，形成漏斗感）
+    svg+='<rect x="'+x.toFixed(1)+'" y="'+y+'" width="'+bw.toFixed(1)+'" height="'+barH+'" rx="6" fill="url(#fg'+i+')" opacity=".95"><title>'+s.label+' '+fmt(s.val)+'</title></rect>';
+    // 阶段副标题（左侧）
+    svg+='<text x="'+(x-10).toFixed(1)+'" y="'+(cyc+5).toFixed(1)+'" text-anchor="end" font-size="11" font-weight="700" fill="#64748b">'+s.sub+'</text>';
+    // 主标签 + 数值：条宽足够放内部，否则放右侧
+    var text=s.label+' '+fmt(s.val);
+    var tw=text.length*12+8;
+    if(bw>=tw){
+      svg+='<text x="'+(W/2).toFixed(1)+'" y="'+(cyc+5).toFixed(1)+'" text-anchor="middle" font-size="13.5" font-weight="800" fill="#fff">'+text+'</text>';
+    } else {
+      svg+='<text x="'+(x+bw+10).toFixed(1)+'" y="'+(cyc+5).toFixed(1)+'" text-anchor="start" font-size="13" font-weight="800" fill="#0f172a">'+text+'</text>';
+    }
+    // 累计占比（右侧）
+    var cum=(s.val/top*100).toFixed(1);
+    svg+='<text x="'+(W-10).toFixed(1)+'" y="'+(cyc+5).toFixed(1)+'" text-anchor="end" font-size="11" font-weight="700" fill="#475569">累计 '+cum+'%</text>';
+    // 层间转化关系
+    if(i<stages.length-1){
+      var next=stages[i+1];
+      var conv=s.val?(next.val/s.val*100):0, drop=100-conv;
+      var ay=y+barH+gap/2;
+      svg+='<text x="'+(W/2).toFixed(1)+'" y="'+(ay+3).toFixed(1)+'" text-anchor="middle" font-size="15" fill="#94a3b8">▼</text>';
+      svg+='<text x="'+(W/2-12).toFixed(1)+'" y="'+(ay+18).toFixed(1)+'" text-anchor="end" font-size="10.5" font-weight="700" fill="#10b981">转化 '+conv.toFixed(1)+'%</text>';
+      svg+='<text x="'+(W/2+12).toFixed(1)+'" y="'+(ay+18).toFixed(1)+'" text-anchor="start" font-size="10.5" font-weight="700" fill="#ef4444">流失 '+drop.toFixed(1)+'%</text>';
+    }
+    y+=barH+gap;
+  });
+  svg+='</svg>';
+  var totalConv=views?leads/views*100:0, ctr2=views?clicks/views*100:0, cvr2=clicks?leads/clicks*100:0;
+  var summary='<div class="ov3-funnel-stats">'+
+    '<div class="fs"><div class="fs-v">'+(ctr2>0?ctr2.toFixed(1)+'%':'—')+'</div><div class="fs-l">点击率</div></div>'+
+    '<div class="fs"><div class="fs-v">'+(cvr2>0?cvr2.toFixed(1)+'%':'—')+'</div><div class="fs-l">点击转留资</div></div>'+
+    '<div class="fs"><div class="fs-v">'+totalConv.toFixed(1)+'%</div><div class="fs-l">场观→留资</div></div>'+
+    '<div class="fs"><div class="fs-v">'+(leads?fmt(leads):'0')+'</div><div class="fs-l">留资总数</div></div>'+
+  '</div>';
+  $('#funnelChart3').innerHTML=svg+summary;
 }
-
 /* ---------- 主播雷达图平铺 ---------- */
 var RADAR_DIMS=[
   {k:'lph',label:'产能',max:10},
@@ -1286,19 +1279,28 @@ function renderRadar3(){
   var anchors=names.map(function(n){return byA[n];}).filter(function(a){return a.sessions>=2;}).sort(function(a,b){return b.leads-a.leads;}).slice(0,8);
   var colorPool=['#2563eb','#10b981','#f59e0b','#8b5cf6','#ef4444','#06b6d4','#ec4899','#14b8a6'];
 
+  var maxLeads=Math.max.apply(null,anchors.map(function(a){return a.leads;}).concat([1]));
+  var teamLeads=anchors.reduce(function(s,a){return s+a.leads;},0)||1;
   $('#ovRadar3').innerHTML =
     '<div class="ov3-radar-section">'+
-      '<h3>主播能力雷达</h3>'+
-      '<div class="sub">'+RADAR_DIMS.map(function(d){return d.label;}).join(' · ')+' · 实线=主播 / 虚线=团队均值</div>'+
+      '<h3>主播能力雷达 · 贡献矩阵</h3>'+
+      '<div class="sub">'+RADAR_DIMS.map(function(d){return d.label;}).join(' · ')+' · 实线=主播 / 虚线=团队均值 · 条形=线索贡献</div>'+
       '<div class="ov3-radar-grid">'+
       anchors.map(function(a,i){
         var c=colorPool[i%colorPool.length];
-        var scores=RADAR_DIMS.map(function(d){return {label:d.label,v:scoreDim(a,d)};});
+        var scores=RADAR_DIMS.map(function(d){return {label:d.label,k:d.k,v:scoreDim(a,d)};});
         var teamScores=RADAR_DIMS.map(function(d){return team[d.k];});
+        var contrib=maxLeads?a.leads/maxLeads*100:0;
+        var rank=i+1;
+        var summary=anchorSummary(a,scores,team,rank,a.leads/teamLeads*100);
         return '<div class="ov3-radar-card" style="--c:'+c+'">'+
           '<div class="rh"><div class="dot"></div><b>'+a.name+'</b><div class="score">'+avgScore(scores).toFixed(0)+'</div></div>'+
           radarSvg(scores,teamScores,c)+
-          '<div class="dims">'+scores.map(function(s){return '<span>'+s.label+' '+s.v.toFixed(0)+'</span>';}).join('')+'</div>'+
+          '<div class="ov3-radar-contrib">'+
+            '<div class="rc-bar"><div class="rc-fill" style="width:'+contrib.toFixed(1)+'%"></div></div>'+
+            '<div class="rc-meta"><span>线索 '+fmt(a.leads)+' 条 · 占团队 '+(a.leads/teamLeads*100).toFixed(0)+'%</span><span>第 '+rank+' 名</span></div>'+
+          '</div>'+
+          '<div class="ov3-radar-sum">'+summary+'</div>'+
         '</div>';
       }).join('')+
       '</div>'+
@@ -1314,8 +1316,20 @@ function scoreDim(a,d){
   return 0;
 }
 function avgScore(scores){ return scores.reduce(function(s,x){return s+x.v;},0)/scores.length; }
+function anchorSummary(a, scores, team, rank, contribPct){
+  var best=scores[0], worst=scores[0];
+  scores.forEach(function(s){ if(s.v>best.v) best=s; if(s.v<worst.v) worst=s; });
+  var bestVs=best.v-(team[best.k]||0), worstVs=worst.v-(team[worst.k]||0);
+  var parts=[];
+  if(best.v>=60 && bestVs>5) parts.push(best.label+'突出');
+  else if(best.v>=45) parts.push(best.label+'良好');
+  if(worst.v<35 && worstVs<-8) parts.push(worst.label+'待提升');
+  var head=a.name+'：'+(parts.length?parts.join('、')+'；':'综合能力均衡；');
+  var cpl=a.leads?a.cost/a.leads:0;
+  return head+'线索贡献居团队第'+rank+'（'+(contribPct).toFixed(0)+'%），单线索成本 ¥'+fmt(cpl,0)+'。';
+}
 function radarSvg(scores,teamScores,color){
-  var W=240,H=160,CX=W/2,CY=H/2+5,R=55,n=scores.length;
+  var W=300,H=236,CX=W/2,CY=H/2+10,R=84,n=scores.length;
   var pts=function(vals){ return vals.map(function(v,i){ var ang=Math.PI/2+i*Math.PI*2/n; return [CX+R*Math.cos(ang)*(v/100), CY-R*Math.sin(ang)*(v/100)]; }); };
   var p1=pts(scores.map(function(s){return s.v;})), p2=pts(teamScores);
   var d1='M'+p1.map(function(p){return p[0].toFixed(1)+' '+p1[0][1].toFixed(1);}).join('L')+'Z';
@@ -1334,7 +1348,7 @@ function radarSvg(scores,teamScores,color){
 /* ---------- 调度 ---------- */
 function renderOverview3(){
   renderHero3(); renderHeroGrid3(); renderInsights3(); renderTargetBoard3();
-  renderTrendLegend3(); renderTrend3(); renderShare3(); renderFunnel3(); renderRadar3();
+  renderTrendLegend3(); renderTrend3(); renderFunnel3(); renderRadar3();
 }
 
 /* compatibility */
