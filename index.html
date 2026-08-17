@@ -447,7 +447,9 @@ table.ctab tr.hl td{background:var(--panel2)}
 .ov3-radar-sum{font-size:11.5px;color:#475569;line-height:1.5;margin-top:8px;background:#f8fafc;border-radius:8px;padding:8px 10px}
 .ov3-mini{position:relative;background:#fff;border:1px solid #eef2f7;border-radius:14px;padding:10px 12px 6px}
 .ov3-mini-chart{position:relative;width:100%;height:auto}
-.ov3-mini-expand{position:absolute;top:8px;right:8px;z-index:5;width:28px;height:28px;border:1px solid var(--line);background:var(--panel2);border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;color:var(--tx2);padding:0}
+.ov3-mini-header{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:4px}
+.ov3-mini-title{font-size:13.5px;font-weight:800;color:#0f172a;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
+.ov3-mini-expand{position:static;flex:0 0 28px;width:28px;height:28px;border:1px solid var(--line);background:var(--panel2);border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;color:var(--tx2);padding:0}
 .ov3-mini-expand:hover{background:var(--pri-l);color:var(--pri);border-color:var(--pri)}
 .ov3-mini-tip{position:absolute;display:none;z-index:20;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 14px;box-shadow:var(--sh2);color:var(--tx);font-size:12px;pointer-events:none;min-width:150px;max-width:280px}
 .ov3-mini-tip .ov3-tip-date{font-size:11px;color:var(--tx2);margin-bottom:6px;border-bottom:1px solid var(--line);padding-bottom:4px}
@@ -1125,15 +1127,20 @@ function miniTrend(title, items, agK, agV, opts){
   opts=opts||{};
   var n=agK.length;
   var W=opts.W||720,H=opts.H||300,pl=opts.pl||12,pr=opts.pr||12,pt=opts.pt||52,pb=opts.pb||26, iw=W-pl-pr, ih=H-pt-pb;
+  var isBig=W>=900;
+  var fsTitle=isBig?19:14, fsLegend=isBig?13.5:11.5, fsBar=isBig?12.5:9.5, fsLine=isBig?12:9, fsAxis=isBig?12:10.5, rPt=isBig?3.4:2.6, sw=isBig?3:2.4;
   var X=function(i){ return pl+(n<2?iw/2:i*iw/(n-1)); };
   var ser=items.map(function(d){ return {d:d, raw:agV.map(function(rows){ return d.f(agg(rows)); })}; });
   var svg='<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="xMidYMid meet" class="ov3-mini-svg" data-w="'+W+'" data-pl="'+pl+'" data-pr="'+pr+'" data-pt="'+pt+'" data-pb="'+pb+'" data-n="'+n+'">';
-  svg+='<text x="'+pl+'" y="21" font-size="13" font-weight="800" fill="#0f172a">'+esc(title)+'</text>';
+  // 标题只在独立 SVG（弹窗/下载）时画；卡片中由 .ov3-mini-header 提供，避免放大按钮遮挡
+  if(opts.showTitle!==false){
+    svg+='<text x="'+pl+'" y="'+(isBig?28:22)+'" font-size="'+fsTitle+'" font-weight="800" fill="#0f172a">'+esc(title)+'</text>';
+  }
   // 紧凑图例（右对齐）
   var lx=W-pr;
   items.slice().reverse().forEach(function(d){
-    var tw=d.label.length*11+18; lx-=tw;
-    svg+='<g transform="translate('+lx.toFixed(1)+',8)"><rect width="10" height="10" rx="2" y="0" fill="'+d.color+'"/><text x="14" y="9.5" font-size="10.5" fill="#475569">'+d.label+'</text></g>';
+    var tw=d.label.length*(isBig?13:11)+18; lx-=tw;
+    svg+='<g transform="translate('+lx.toFixed(1)+','+(isBig?10:8)+')"><rect width="10" height="10" rx="2" y="0" fill="'+d.color+'"/><text x="14" y="'+(isBig?11.5:9.5)+'" font-size="'+fsLegend+'" fill="#475569">'+d.label+'</text></g>';
   });
   // 网格
   for(var i=0;i<=4;i++){ var y=pt+ih*i/4; svg+='<line x1="'+pl+'" y1="'+y.toFixed(1)+'" x2="'+(W-pr)+'" y2="'+y.toFixed(1)+'" stroke="#f1f5f9" stroke-width="1"/>'; }
@@ -1143,28 +1150,28 @@ function miniTrend(title, items, agK, agV, opts){
     if(mx===mn){ mx=(mx||1)*1.2; mn=0; }
     var norm=function(v){ return v==null?null:((v-mn)/(mx-mn||1)); };
     if(S.d.bar){
-      var bw=Math.max(3,Math.min(28,iw/n*0.6));
+      var bw=Math.max(3,Math.min(isBig?40:28,iw/n*0.6));
       S.raw.forEach(function(v,i){ if(v==null) return;
         var x=X(i), t=norm(v), yy=pt+ih-t*ih, hh=(pt+ih)-yy;
         svg+='<rect class="ov3-mini-bar" data-i="'+i+'" x="'+(x-bw/2).toFixed(1)+'" y="'+yy.toFixed(1)+'" width="'+bw.toFixed(1)+'" height="'+hh.toFixed(1)+'" rx="3" fill="'+S.d.color+'" opacity=".85"><title>'+agK[i]+' / '+S.d.label+' '+S.d.fmt(v)+'</title></rect>';
-        if(n<=60){ svg+='<text x="'+x.toFixed(1)+'" y="'+(Math.max(14,yy-5)).toFixed(1)+'" text-anchor="middle" font-size="7.5" font-weight="700" fill="'+S.d.color+'">'+S.d.short(v)+'</text>'; }
+        if(n<=60){ svg+='<text x="'+x.toFixed(1)+'" y="'+(Math.max(isBig?20:16,yy-6)).toFixed(1)+'" text-anchor="middle" font-size="'+fsBar+'" font-weight="700" fill="'+S.d.color+'">'+S.d.short(v)+'</text>'; }
       });
     } else {
       var segs=[],cur=[];
       S.raw.forEach(function(v,i){ if(v==null){ if(cur.length)segs.push(cur); cur=[]; } else { var t=norm(v); cur.push([X(i),pt+ih-t*ih,i,v]); } });
       if(cur.length) segs.push(cur);
-      segs.forEach(function(sg){ svg+='<path d="M'+sg.map(function(p){return p[0].toFixed(1)+' '+p[1].toFixed(1);}).join('L')+'" fill="none" stroke="'+S.d.color+'" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>'; });
+      segs.forEach(function(sg){ svg+='<path d="M'+sg.map(function(p){return p[0].toFixed(1)+' '+p[1].toFixed(1);}).join('L')+'" fill="none" stroke="'+S.d.color+'" stroke-width="'+sw+'" stroke-linejoin="round" stroke-linecap="round"/>'; });
       var step=Math.max(1,Math.ceil(n/ (n<=60? n : 10)));
       S.raw.forEach(function(v,i){ if(v==null) return;
         var t=norm(v), x=X(i), y=pt+ih-t*ih;
         var show=(n<=60)||(i%step===0)||i===n-1;
-        svg+='<circle class="ov3-mini-point" data-i="'+i+'" cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" r="2.6" fill="#fff" stroke="'+S.d.color+'" stroke-width="1.6"><title>'+agK[i]+' / '+S.d.label+' '+S.d.fmt(v)+'</title></circle>';
-        if(show){ var above=(t<0.82), ly=above?y-7:y+12; svg+='<text x="'+x.toFixed(1)+'" y="'+ly.toFixed(1)+'" text-anchor="middle" font-size="7" fill="'+S.d.color+'">'+S.d.short(v)+'</text>'; }
+        svg+='<circle class="ov3-mini-point" data-i="'+i+'" cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" r="'+rPt+'" fill="#fff" stroke="'+S.d.color+'" stroke-width="1.6"><title>'+agK[i]+' / '+S.d.label+' '+S.d.fmt(v)+'</title></circle>';
+        if(show){ var above=(t<0.82), ly=above?y-(isBig?10:8):y+(isBig?14:11); svg+='<text x="'+x.toFixed(1)+'" y="'+ly.toFixed(1)+'" text-anchor="middle" font-size="'+fsLine+'" fill="'+S.d.color+'">'+S.d.short(v)+'</text>'; }
       });
     }
   });
   var ls=Math.max(1,Math.ceil(n/8));
-  agK.forEach(function(k,i){ if(i%ls===0||i===n-1){ svg+='<text x="'+X(i).toFixed(1)+'" y="'+(H-6)+'" text-anchor="middle" font-size="8.5" fill="#94a3b8">'+k.slice(5)+'</text>'; } });
+  agK.forEach(function(k,i){ if(i%ls===0||i===n-1){ svg+='<text x="'+X(i).toFixed(1)+'" y="'+(H-6)+'" text-anchor="middle" font-size="'+fsAxis+'" fill="#94a3b8">'+k.slice(5)+'</text>'; } });
   svg+='</svg>';
   return svg;
 }
@@ -1179,7 +1186,12 @@ function renderTrend3(){
     agK=Object.keys(wk).sort(); agV=agK.map(function(k){return wk[k];});
   }
   var html='<div class="ov3-trend-grid">';
-  TREND3_MINI.forEach(function(m,i){ html+='<div class="ov3-mini" data-idx="'+i+'"><button class="ov3-mini-expand" type="button" title="放大查看">⛶</button><div class="ov3-mini-chart">'+miniTrend(m.title,m.items,agK,agV)+'</div><div class="ov3-mini-tip"></div></div>'; });
+  TREND3_MINI.forEach(function(m,i){
+    html+='<div class="ov3-mini" data-idx="'+i+'">'+
+      '<div class="ov3-mini-header"><h4 class="ov3-mini-title">'+esc(m.title)+'</h4><button class="ov3-mini-expand" type="button" title="放大查看">⛶</button></div>'+
+      '<div class="ov3-mini-chart">'+miniTrend(m.title,m.items,agK,agV,{showTitle:false})+'</div>'+
+      '<div class="ov3-mini-tip"></div></div>';
+  });
   html+='</div><div class="ov3-trend-note">各小图按自身指标峰值归一化展示趋势（柱=量级 · 线=率/成本），悬停查看每日实际值 · 默认近30天</div>';
   $('#trendChart3').innerHTML=html;
   attachTrend3Cards(agK,agV);
@@ -1232,6 +1244,7 @@ function openTrend3Modal(idx,agK,agV){
   wrap.innerHTML='<div class="ov3-modal-overlay" onclick="closeTrend3Modal()"></div>'+
     '<div class="ov3-modal-box">'+
       '<button class="ov3-modal-close" type="button" onclick="closeTrend3Modal()">×</button>'+
+      '<div class="ov3-mini-header" style="margin-bottom:10px"><h4 class="ov3-mini-title" style="font-size:16px">'+esc(cfg.title)+'</h4></div>'+
       '<div class="ov3-modal-chart">'+svg+'</div>'+
       '<div class="ov3-mini-tip"></div>'+
     '</div>';
