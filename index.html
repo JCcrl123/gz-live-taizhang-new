@@ -820,7 +820,7 @@ function setRange(days){
 function resetFilters(){
   state.anchor=''; state.slot='';
   $('#fAnchor').value=''; $('#fSlot').value='';
-  setRange(90);
+  setRange(30);
 }
 
 /* ==================== KPI ==================== */
@@ -2570,8 +2570,8 @@ function boot(d){
   if(!SESS.length){ document.querySelector('.wrap').innerHTML='<div class="empty">数据为空</div>'; return; }
   $('#syncInfo').textContent='同步于 '+d.meta.syncedAt+'　·　'+fmt(d.meta.total)+' 场　·　窗口 '+DATA_WINDOW_START+' 起';
   initUI();
-  // 默认近 90 天
-  var b=new Date(d.meta.dateMax), a=new Date(b.getTime()-89*864e5);
+  // 默认近 30 天
+  var b=new Date(d.meta.dateMax), a=new Date(b.getTime()-29*864e5);
   var lo=new Date(d.meta.dateMin);
   if(a<lo) a=lo;
   state.d1=a.toISOString().slice(0,10); state.d2=d.meta.dateMax;
@@ -2580,7 +2580,7 @@ function boot(d){
   $('#d2').min=d.meta.dateMin; $('#d2').max=d.meta.dateMax;
   renderAll();
   renderMtMetricChips();
-  $$('#quickRange .chip')[2].classList.add('on');
+  $$('#quickRange .chip')[1].classList.add('on');
 }
 
 /* ==================== 数据归一化：兼容预处理的 sessions 数据（data.json） ==================== */
@@ -2603,8 +2603,8 @@ function normalizeSessions(arr){
   }
 }
 
-/* ==================== 启动：优先拉取 COS 最新数据，失败回退内联 ==================== */
-window.COS_DATA_URL = window.COS_DATA_URL || 'data.json';
+/* ==================== 启动：优先使用内联数据，后台尝试拉取 COS 更新 ==================== */
+window.COS_DATA_URL = window.COS_DATA_URL || '';
 function initFromRaw(raw){
   var data = (raw && raw.maike) ? transformRaw(raw) : raw;
   if(data && data.sessions && data.sessions.length){
@@ -2625,20 +2625,31 @@ function showLoadErr(msg){
 }
 function startLoad(){
   showLoading();
+  var preloaded = window.__PRELOADED__;
+  function usePreloaded(){
+    if(preloaded){
+      window.__LAST_SYNC_AT = (preloaded.meta&&preloaded.meta.syncedAt)||'';
+      var bel = document.getElementById('syncBadge');
+      if(bel){ bel.textContent = '数据来源：内联兜底 · 同步于 ' + ((preloaded.meta&&preloaded.meta.syncedAt)||'?'); bel.style.display=''; }
+      initFromRaw(preloaded);
+    } else {
+      showLoadErr('无内联数据且未配置数据源');
+    }
+  }
+  // 1) 立即渲染内联数据，保证 GitHub Pages 等无 COS 环境也能正常打开
+  usePreloaded();
+  // 2) 后台尝试拉取 COS 更新（仅 Drive/SCF 等已配置环境生效）
+  if(!window.COS_DATA_URL) return;
   fetch(window.COS_DATA_URL, {cache:'no-store'})
     .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
-    .then(function(d){ window.__LAST_SYNC_AT = (d.meta&&d.meta.syncedAt)||''; initFromRaw(d); })
-    .catch(function(e){
-      console.warn('[load] COS 拉取失败，使用内联兜底数据：', e.message);
-      if(window.__PRELOADED__){
-        var fb = window.__PRELOADED__;
-        window.__LAST_SYNC_AT = (fb.meta&&fb.meta.syncedAt)||'';
-        var bel = document.getElementById('syncBadge');
-        if(bel){ bel.textContent = '数据来源：内联兜底 · 同步于 ' + ((fb.meta&&fb.meta.syncedAt)||'?'); bel.style.display=''; }
-        initFromRaw(fb);
-      }
-      else { showLoadErr(e.message); }
-    });
+    .then(function(d){
+      var remote = (d.meta&&d.meta.syncedAt)||'';
+      var local = window.__LAST_SYNC_AT || '';
+      if(remote && local && remote <= local) return;
+      window.__LAST_SYNC_AT = remote;
+      initFromRaw(d);
+    })
+    .catch(function(e){ console.warn('[load] COS 拉取失败，保持内联数据：', e.message); });
 }
 if(document.readyState === 'loading'){
   document.addEventListener('DOMContentLoaded', startLoad);
@@ -2669,6 +2680,7 @@ if(document.readyState === 'loading'){
     } catch(e){ console.warn('applyIfNewer fail', e); return false; }
   }
   async function pull(){
+    if(!window.COS_DATA_URL) return;
     try {
       var r = await fetch(window.COS_DATA_URL, {cache:'no-store'});
       if(!r.ok) throw new Error('HTTP '+r.status);
