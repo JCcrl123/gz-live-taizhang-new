@@ -445,12 +445,29 @@ table.ctab tr.hl td{background:var(--panel2)}
 .ov3-radar-contrib .rc-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,#60a5fa,#2563eb)}
 .ov3-radar-contrib .rc-meta{display:flex;justify-content:space-between;font-size:10.5px;color:#64748b;margin-top:4px}
 .ov3-radar-sum{font-size:11.5px;color:#475569;line-height:1.5;margin-top:8px;background:#f8fafc;border-radius:8px;padding:8px 10px}
+.ov3-mini{position:relative;background:#fff;border:1px solid #eef2f7;border-radius:14px;padding:10px 12px 6px}
+.ov3-mini-chart{position:relative;width:100%;height:auto}
+.ov3-mini-expand{position:absolute;top:8px;right:8px;z-index:5;width:28px;height:28px;border:1px solid var(--line);background:var(--panel2);border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;color:var(--tx2);padding:0}
+.ov3-mini-expand:hover{background:var(--pri-l);color:var(--pri);border-color:var(--pri)}
+.ov3-mini-tip{position:absolute;display:none;z-index:20;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 14px;box-shadow:var(--sh2);color:var(--tx);font-size:12px;pointer-events:none;min-width:150px;max-width:280px}
+.ov3-mini-tip .ov3-tip-date{font-size:11px;color:var(--tx2);margin-bottom:6px;border-bottom:1px solid var(--line);padding-bottom:4px}
+.ov3-mini-tip .ov3-tip-row{display:flex;align-items:center;gap:6px;margin:3px 0}
+.ov3-mini-tip .ov3-tip-dot{width:8px;height:8px;border-radius:2px;flex:0 0 auto}
+.ov3-mini-tip .ov3-tip-lab{flex:1;color:var(--tx2)}
+.ov3-mini-tip b{font-weight:700;color:var(--tx);white-space:nowrap}
+.ov3-modal{position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px}
+.ov3-modal-overlay{position:absolute;inset:0;background:rgba(15,23,42,.55);backdrop-filter:blur(2px)}
+.ov3-modal-box{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:22px 24px 18px;box-shadow:var(--sh2);width:min(1140px,95vw);max-height:90vh;overflow:auto}
+.ov3-modal-close{position:absolute;top:12px;right:12px;width:34px;height:34px;border:1px solid var(--line);background:var(--panel2);border-radius:10px;cursor:pointer;font-size:20px;color:var(--tx2);display:flex;align-items:center;justify-content:center;padding:0}
+.ov3-modal-close:hover{background:var(--pri-l);color:var(--pri);border-color:var(--pri)}
+.ov3-modal-chart{width:100%}
+.ov3-modal .ov3-mini-tip{z-index:30}
 .ov3-funnel-svg{display:block;margin:0 auto;max-width:680px;width:100%;height:auto}
 .ov3-funnel-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:12px;text-align:center}
 .ov3-funnel-stats .fs{background:#f8fafc;border-radius:10px;padding:8px 4px}
 .ov3-funnel-stats .fs-v{font-size:16px;font-weight:800;color:#0f172a}
 .ov3-funnel-stats .fs-l{font-size:10.5px;color:#94a3b8;margin-top:2px}
-@media(max-width:680px){.ov3-trend-grid{grid-template-columns:1fr}.ov3-funnel-stats{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:680px){.ov3-trend-grid{grid-template-columns:1fr}.ov3-funnel-stats{grid-template-columns:repeat(2,1fr)}.ov3-modal{padding:10px}.ov3-modal-box{padding:16px}}
 @media(max-width:1200px){
   .ov3-hero-bento{grid-template-columns:1fr}
   .ov3-insights{grid-template-columns:repeat(2,1fr)}
@@ -1084,16 +1101,16 @@ var TREND3_MINI=[
   {title:'线索量 · 消耗 · 单线索成本', items:[
     {k:'leads',label:'线索量',color:'#2563eb',bar:true, f:function(g){return g.leads;}, fmt:function(v){return fmt(v)+' 条';}, short:function(v){return fmtCompact(v);}},
     {k:'cost', label:'消耗',  color:'#10b981', f:function(g){return g.cost;}, fmt:function(v){return '¥'+fmtK(v);}, short:function(v){return '¥'+fmtCompact(v);}},
-    {k:'cpl',  label:'单线索成本',color:'#f59e0b', f:function(g){return g.leads?g.cost/g.leads:null;}, fmt:function(v){return '¥'+fmt(v,0);}, short:function(v){return '¥'+fmt(v,0);}}
+    {k:'cpl',  label:'单线索成本',color:'#f59e0b', f:function(g){return g.cpl;}, fmt:function(v){return '¥'+fmt(v,0);}, short:function(v){return '¥'+fmt(v,0);}}
   ]},
   {title:'单线索成本 · 小时产量 · 小风车点击率', items:[
-    {k:'cpl', label:'单线索成本',color:'#f59e0b', f:function(g){return g.leads?g.cost/g.leads:null;}, fmt:function(v){return '¥'+fmt(v,0);}, short:function(v){return '¥'+fmt(v,0);}},
-    {k:'lph', label:'小时产量',color:'#8b5cf6', f:function(g){var h=g.durMin?g.durMin/60:g.sessions; return h?g.leads/h:null;}, fmt:function(v){return fmt(v,1)+' 条/h';}, short:function(v){return fmt(v,1);}},
+    {k:'cpl', label:'单线索成本',color:'#f59e0b', f:function(g){return g.cpl;}, fmt:function(v){return '¥'+fmt(v,0);}, short:function(v){return '¥'+fmt(v,0);}},
+    {k:'lph', label:'小时产量',color:'#8b5cf6',bar:true, f:function(g){return g.lph;}, fmt:function(v){return fmt(v,1)+' 条/h';}, short:function(v){return fmt(v,1);}},
     {k:'ctr', label:'小风车点击率',color:'#ef4444', f:function(g){return g.ctr;}, fmt:function(v){return pct(v,2);}, short:function(v){return (v*100).toFixed(1)+'%';}}
   ]},
   {title:'单线索成本 · 线索量 · 小风车点击率 · 点击转化率', items:[
     {k:'leads',label:'线索量',color:'#2563eb',bar:true, f:function(g){return g.leads;}, fmt:function(v){return fmt(v)+' 条';}, short:function(v){return fmtCompact(v);}},
-    {k:'cpl',  label:'单线索成本',color:'#f59e0b', f:function(g){return g.leads?g.cost/g.leads:null;}, fmt:function(v){return '¥'+fmt(v,0);}, short:function(v){return '¥'+fmt(v,0);}},
+    {k:'cpl',  label:'单线索成本',color:'#f59e0b', f:function(g){return g.cpl;}, fmt:function(v){return '¥'+fmt(v,0);}, short:function(v){return '¥'+fmt(v,0);}},
     {k:'ctr',  label:'小风车点击率',color:'#ef4444', f:function(g){return g.ctr;}, fmt:function(v){return pct(v,2);}, short:function(v){return (v*100).toFixed(1)+'%';}},
     {k:'cvr',  label:'点击转化率',color:'#10b981', f:function(g){return g.cvr;}, fmt:function(v){return pct(v,1);}, short:function(v){return (v*100).toFixed(1)+'%';}}
   ]},
@@ -1104,28 +1121,13 @@ var TREND3_MINI=[
   ]}
 ];
 
-function renderTrend3(){
-  var byD={}; VIEW.forEach(function(s){(byD[s.d]=byD[s.d]||[]).push(s);});
-  var dates=Object.keys(byD).sort();
-  if(dates.length<2){ $('#trendChart3').innerHTML='<div class="empty">数据不足，无法绘制趋势</div>'; return; }
-  var agK=dates, agV=dates.map(function(d){return byD[d];}), mode='日';
-  if(dates.length>92){
-    mode='周'; var wk={};
-    dates.forEach(function(d){ var dt=new Date(d), day=(dt.getDay()+6)%7; var mon=new Date(dt.getTime()-day*864e5).toISOString().slice(0,10); (wk[mon]=wk[mon]||[]).push.apply(wk[mon],byD[d]); });
-    agK=Object.keys(wk).sort(); agV=agK.map(function(k){return wk[k];});
-  }
-  var html='<div class="ov3-trend-grid">';
-  TREND3_MINI.forEach(function(m){ html+='<div class="ov3-mini">'+miniTrend(m.title,m.items,agK,agV)+'</div>'; });
-  html+='</div><div class="ov3-trend-note">各小图按自身指标峰值归一化展示趋势（柱=量级 · 线=率/成本），悬停查看每日实际值 · 默认近30天</div>';
-  $('#trendChart3').innerHTML=html;
-}
-
-function miniTrend(title, items, agK, agV){
+function miniTrend(title, items, agK, agV, opts){
+  opts=opts||{};
   var n=agK.length;
-  var W=720,H=300,pl=12,pr=12,pt=52,pb=26, iw=W-pl-pr, ih=H-pt-pb;
+  var W=opts.W||720,H=opts.H||300,pl=opts.pl||12,pr=opts.pr||12,pt=opts.pt||52,pb=opts.pb||26, iw=W-pl-pr, ih=H-pt-pb;
   var X=function(i){ return pl+(n<2?iw/2:i*iw/(n-1)); };
   var ser=items.map(function(d){ return {d:d, raw:agV.map(function(rows){ return d.f(agg(rows)); })}; });
-  var svg='<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="xMidYMid meet" class="ov3-mini-svg">';
+  var svg='<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="xMidYMid meet" class="ov3-mini-svg" data-w="'+W+'" data-pl="'+pl+'" data-pr="'+pr+'" data-pt="'+pt+'" data-pb="'+pb+'" data-n="'+n+'">';
   svg+='<text x="'+pl+'" y="21" font-size="13" font-weight="800" fill="#0f172a">'+esc(title)+'</text>';
   // 紧凑图例（右对齐）
   var lx=W-pr;
@@ -1144,7 +1146,7 @@ function miniTrend(title, items, agK, agV){
       var bw=Math.max(3,Math.min(28,iw/n*0.6));
       S.raw.forEach(function(v,i){ if(v==null) return;
         var x=X(i), t=norm(v), yy=pt+ih-t*ih, hh=(pt+ih)-yy;
-        svg+='<rect x="'+(x-bw/2).toFixed(1)+'" y="'+yy.toFixed(1)+'" width="'+bw.toFixed(1)+'" height="'+hh.toFixed(1)+'" rx="3" fill="'+S.d.color+'" opacity=".85"><title>'+agK[i]+'\n'+S.d.label+' '+S.d.fmt(v)+'</title></rect>';
+        svg+='<rect class="ov3-mini-bar" data-i="'+i+'" x="'+(x-bw/2).toFixed(1)+'" y="'+yy.toFixed(1)+'" width="'+bw.toFixed(1)+'" height="'+hh.toFixed(1)+'" rx="3" fill="'+S.d.color+'" opacity=".85"><title>'+agK[i]+' / '+S.d.label+' '+S.d.fmt(v)+'</title></rect>';
         if(n<=60){ svg+='<text x="'+x.toFixed(1)+'" y="'+(Math.max(14,yy-5)).toFixed(1)+'" text-anchor="middle" font-size="7.5" font-weight="700" fill="'+S.d.color+'">'+S.d.short(v)+'</text>'; }
       });
     } else {
@@ -1156,7 +1158,7 @@ function miniTrend(title, items, agK, agV){
       S.raw.forEach(function(v,i){ if(v==null) return;
         var t=norm(v), x=X(i), y=pt+ih-t*ih;
         var show=(n<=60)||(i%step===0)||i===n-1;
-        svg+='<circle cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" r="2.6" fill="#fff" stroke="'+S.d.color+'" stroke-width="1.6"><title>'+agK[i]+'\n'+S.d.label+' '+S.d.fmt(v)+'</title></circle>';
+        svg+='<circle class="ov3-mini-point" data-i="'+i+'" cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" r="2.6" fill="#fff" stroke="'+S.d.color+'" stroke-width="1.6"><title>'+agK[i]+' / '+S.d.label+' '+S.d.fmt(v)+'</title></circle>';
         if(show){ var above=(t<0.82), ly=above?y-7:y+12; svg+='<text x="'+x.toFixed(1)+'" y="'+ly.toFixed(1)+'" text-anchor="middle" font-size="7" fill="'+S.d.color+'">'+S.d.short(v)+'</text>'; }
       });
     }
@@ -1166,7 +1168,87 @@ function miniTrend(title, items, agK, agV){
   svg+='</svg>';
   return svg;
 }
+function renderTrend3(){
+  var byD={}; VIEW.forEach(function(s){(byD[s.d]=byD[s.d]||[]).push(s);});
+  var dates=Object.keys(byD).sort();
+  if(dates.length<2){ $('#trendChart3').innerHTML='<div class="empty">数据不足，无法绘制趋势</div>'; return; }
+  var agK=dates, agV=dates.map(function(d){return byD[d];}), mode='日';
+  if(dates.length>92){
+    mode='周'; var wk={};
+    dates.forEach(function(d){ var dt=new Date(d), day=(dt.getDay()+6)%7; var mon=new Date(dt.getTime()-day*864e5).toISOString().slice(0,10); (wk[mon]=wk[mon]||[]).push.apply(wk[mon],byD[d]); });
+    agK=Object.keys(wk).sort(); agV=agK.map(function(k){return wk[k];});
+  }
+  var html='<div class="ov3-trend-grid">';
+  TREND3_MINI.forEach(function(m,i){ html+='<div class="ov3-mini" data-idx="'+i+'"><button class="ov3-mini-expand" type="button" title="放大查看">⛶</button><div class="ov3-mini-chart">'+miniTrend(m.title,m.items,agK,agV)+'</div><div class="ov3-mini-tip"></div></div>'; });
+  html+='</div><div class="ov3-trend-note">各小图按自身指标峰值归一化展示趋势（柱=量级 · 线=率/成本），悬停查看每日实际值 · 默认近30天</div>';
+  $('#trendChart3').innerHTML=html;
+  attachTrend3Cards(agK,agV);
+}
 function fmtCompact(v){ if(v>=10000) return (v/10000).toFixed(1)+'w'; if(v>=1000) return (v/1000).toFixed(1)+'k'; return Math.round(v).toString(); }
+function attachTrend3Cards(agK,agV){
+  var cards=document.querySelectorAll('#trendChart3 .ov3-mini');
+  cards.forEach(function(card,idx){
+    if(idx>=TREND3_MINI.length) return;
+    var items=TREND3_MINI[idx].items;
+    var svg=card.querySelector('.ov3-mini-chart svg');
+    attachTrend3Hover(svg,items,agK,agV,card);
+    card.querySelector('.ov3-mini-expand').onclick=function(){ openTrend3Modal(idx,agK,agV); };
+  });
+}
+function attachTrend3Hover(svg,items,agK,agV,card){
+  if(!svg||!card) return;
+  var tip=card.querySelector('.ov3-mini-tip');
+  if(!tip) return;
+  svg.addEventListener('mousemove',function(e){
+    var W=Number(svg.getAttribute('data-w'))||720;
+    var pl=Number(svg.getAttribute('data-pl'))||12;
+    var pr=Number(svg.getAttribute('data-pr'))||12;
+    var n=Number(svg.getAttribute('data-n'))||agK.length;
+    var rect=svg.getBoundingClientRect();
+    var x=e.clientX-rect.left;
+    var cw=W-pl-pr;
+    var i=Math.max(0,Math.min(n-1,Math.round((x-pl)/cw*(n-1))));
+    var date=agK[i], rows=agV[i];
+    if(!date||!rows){ tip.style.display='none'; return; }
+    var g=agg(rows);
+    tip.innerHTML='<div class="ov3-tip-date">'+date+'</div>'+items.map(function(it){ var v=it.f(g); return '<div class="ov3-tip-row"><span class="ov3-tip-dot" style="background:'+it.color+'"></span><span class="ov3-tip-lab">'+esc(it.label)+'</span><b>'+(v==null?'—':it.fmt(v))+'</b></div>'; }).join('');
+    tip.style.display='block';
+    var cr=card.getBoundingClientRect();
+    var tx=e.clientX-cr.left+12, ty=e.clientY-cr.top+12;
+    var tw=tip.offsetWidth||200, th=tip.offsetHeight||80;
+    if(tx+tw > cr.width) tx=e.clientX-cr.left-tw-12;
+    if(ty+th > cr.height) ty=e.clientY-cr.top-th-12;
+    tip.style.left=tx+'px'; tip.style.top=ty+'px';
+  });
+  svg.addEventListener('mouseleave',function(){ tip.style.display='none'; });
+}
+function openTrend3Modal(idx,agK,agV){
+  closeTrend3Modal();
+  var cfg=TREND3_MINI[idx];
+  var svg=miniTrend(cfg.title,cfg.items,agK,agV,{W:1100,H:520,pl:18,pr:18,pt:70,pb:38});
+  var wrap=document.createElement('div');
+  wrap.id='ov3TrendModal';
+  wrap.className='ov3-modal';
+  wrap.innerHTML='<div class="ov3-modal-overlay" onclick="closeTrend3Modal()"></div>'+
+    '<div class="ov3-modal-box">'+
+      '<button class="ov3-modal-close" type="button" onclick="closeTrend3Modal()">×</button>'+
+      '<div class="ov3-modal-chart">'+svg+'</div>'+
+      '<div class="ov3-mini-tip"></div>'+
+    '</div>';
+  document.body.appendChild(wrap);
+  var box=wrap.querySelector('.ov3-modal-box');
+  var svgEl=box.querySelector('svg');
+  attachTrend3Hover(svgEl,cfg.items,agK,agV,box);
+  document.body.style.overflow='hidden';
+  document.addEventListener('keydown',escCloseTrend3);
+}
+function closeTrend3Modal(){
+  var m=document.getElementById('ov3TrendModal');
+  if(m){ m.remove(); }
+  document.body.style.overflow='';
+  document.removeEventListener('keydown',escCloseTrend3);
+}
+function escCloseTrend3(e){ if(e.key==='Escape') closeTrend3Modal(); }
 
 function renderTrendLegend3(){
   $('#trendLegend3').innerHTML='<span class="ov3-trend-cap">4 张趋势组合图 · 按自然日聚合 · 柱=量级指标 / 线=率·成本指标</span>';
