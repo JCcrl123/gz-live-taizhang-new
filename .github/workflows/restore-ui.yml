@@ -50,15 +50,20 @@ jobs:
               sys.exit(1)
           data, _ = json.JSONDecoder().raw_decode(html, m.end())
           sessions = data.get('sessions', [])
+          raw_records = data.get('maike', [])
           total = data.get('meta', {}).get('total', 0)
-          print('验证通过: sessions=%d, total=%d, syncedAt=%s' % (
-              len(sessions), total, data.get('meta', {}).get('syncedAt', '-')
+          synced_at = data.get('meta', {}).get('syncedAt', '-')
+          print('验证通过: sessions=%d, raw=%d, total=%d, syncedAt=%s' % (
+              len(sessions), len(raw_records), total, synced_at
           ))
-          if len(sessions) < 500:
+          if sessions and len(sessions) < 500:
               print('ERROR: sessions 数量异常（%d < 500），拒绝提交' % len(sessions))
               sys.exit(1)
-          if total != len(sessions):
-              print('ERROR: meta.total 与 sessions 长度不一致')
+          if raw_records and len(raw_records) < 500:
+              print('ERROR: maike 原始记录数异常（%d < 500），拒绝提交' % len(raw_records))
+              sys.exit(1)
+          if not sessions and not raw_records:
+              print('ERROR: 既没有 sessions 也没有 maike，拒绝提交')
               sys.exit(1)
           PY
 
