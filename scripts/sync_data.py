@@ -254,13 +254,13 @@ def main():
     log('token ready')
 
     raw, fields = fetch_records(at, TABLE_MAIKE)
-    sessions = build_sessions(raw)
+    sessions = build_sessions(raw)          # 用于完整性校验
     log('maike sessions:', len(sessions), '| fields:', fields)
 
-    targets = {}
+    targets_raw = []
     try:
-        r2, _ = fetch_records(at, TABLE_TARGET)
-        targets = build_targets(r2)
+        targets_raw, _ = fetch_records(at, TABLE_TARGET)
+        build_targets(targets_raw)          # 仅校验目标表可解析
     except Exception as e:
         log('target table warn (skip):', e)
 
@@ -269,6 +269,7 @@ def main():
 
     dates = [s['date'] for s in sessions]
     anchors = sorted({s['anchor'] for s in sessions})
+    # 页面 JS 期望原始数据格式：{meta, maike, target}，由前端 transformRaw/build_sessions 自行转换
     payload = {
         'meta': {
             'source': '飞书多维表格 · 迈科代理直播数据',
@@ -284,7 +285,7 @@ def main():
                 'sparseEarly': '小风车/评论/场观数据 2024 年缺失，2025 年起逐步完整',
             },
         },
-        'targets': targets, 'sessions': sessions,
+        'maike': raw, 'target': targets_raw,
     }
 
     if DRY_RUN:
@@ -293,7 +294,7 @@ def main():
 
     with open(OUT_PATH, 'w', encoding='utf-8') as f:
         json.dump(payload, f, ensure_ascii=False, separators=(',', ':'))
-    log('OK 写出 %s, sessions=%d' % (OUT_PATH, len(sessions)))
+    log('OK 写出 %s, raw=%d, sessions=%d' % (OUT_PATH, len(raw), len(sessions)))
     return payload
 
 
