@@ -1,0 +1,43 @@
+name: 每日同步飞书台账 → data.json
+
+on:
+  schedule:
+    # 每日 22:00 北京时间（14:00 UTC）同步，与线上最后成功同步时间一致
+    - cron: '0 14 * * *'
+  workflow_dispatch: {}      # 允许在 Actions 页面手动点一次立即跑
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: 检出仓库
+        uses: actions/checkout@v4
+
+      - name: 配置 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 运行同步脚本（直连飞书，生成 data.json）
+        env:
+          FEISHU_APP_ID: ${{ secrets.FEISHU_APP_ID }}
+          FEISHU_APP_SECRET: ${{ secrets.FEISHU_APP_SECRET }}
+          FEISHU_AUTH_MODE: ${{ secrets.FEISHU_AUTH_MODE || 'tenant' }}
+          FEISHU_REFRESH_TOKEN: ${{ secrets.FEISHU_REFRESH_TOKEN }}
+        run: python scripts/sync_data.py
+
+      - name: 提交并推回仓库
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data.json
+          if git diff --cached --quiet; then
+            echo "无变化，跳过提交"
+          else
+            git commit -m "chore: 每日从飞书同步 data.json"
+            git push
+          fi
