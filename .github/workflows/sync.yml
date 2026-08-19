@@ -3,7 +3,7 @@ name: 每日同步飞书台账 → data.json
 on:
   schedule:
     # 每日 22:00 北京时间（14:00 UTC）同步，与线上最后成功同步时间一致
-    - cron: '0 14 * * *'
+    - cron: '0 22 * * *'
   workflow_dispatch: {}      # 允许在 Actions 页面手动点一次立即跑
 
 permissions:
