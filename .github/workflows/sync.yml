@@ -22,6 +22,9 @@ jobs:
         with:
           python-version: '3.11'
 
+      - name: 备份原始 index.html
+        run: cp index.html index.html.bak
+
       - name: 运行同步脚本（直连飞书，生成 data.json）
         env:
           FEISHU_APP_ID: ${{ secrets.FEISHU_APP_ID }}
@@ -29,12 +32,48 @@ jobs:
           FEISHU_AUTH_MODE: ${{ secrets.FEISHU_AUTH_MODE || 'tenant' }}
           FEISHU_REFRESH_TOKEN: ${{ secrets.FEISHU_REFRESH_TOKEN }}
         run: python scripts/sync_data.py
-        
+
       - name: 把最新数据注入 index.html（页面直接读内联 __PRELOADED__）
         run: python scripts/inject_preload.py
 
+      - name: 验证 index.html 完整性（防止注入失败导致空白页）
+        run: |
+          python - <<'PY'
+          import json, re, sys
+          with open('index.html', 'r', encoding='utf-8') as f:
+              html = f.read()
+          m = re.search(r'window\.__PRELOADED__\s*=\s*', html)
+          if not m:
+              print('ERROR: 找不到 window.__PRELOADED__')
+              sys.exit(1)
+          data, _ = json.JSONDecoder().raw_decode(html, m.end())
+          sessions = data.get('sessions', [])
+          raw_records = data.get('maike', [])
+          total = data.get('meta', {}).get('total', 0)
+          synced_at = data.get('meta', {}).get('syncedAt', '-')
+          print('验证通过: sessions=%d, raw=%d, total=%d, syncedAt=%s' % (
+              len(sessions), len(raw_records), total, synced_at
+          ))
+          if sessions and len(sessions) < 500:
+              print('ERROR: sessions 数量异常（%d < 500），拒绝提交' % len(sessions))
+              sys.exit(1)
+          if raw_records and len(raw_records) < 500:
+              print('ERROR: maike 原始记录数异常（%d < 500），拒绝提交' % len(raw_records))
+              sys.exit(1)
+          if not sessions and not raw_records:
+              print('ERROR: 既没有 sessions 也没有 maike，拒绝提交')
+              sys.exit(1)
+          PY
+
+      - name: 注入失败时恢复备份
+        if: failure()
+        run: |
+          echo "检测到注入或验证失败，恢复原始 index.html"
+          cp index.html.bak index.html || true
+
       - name: 提交并推回仓库
         run: |
+          rm -f index.html.bak
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add data.json index.html
