@@ -51,10 +51,34 @@ def main():
     with open(HTML_PATH, 'w', encoding='utf-8') as f:
         f.write(new_html)
 
-    print('OK: 已把 %s 注入 %s （sessions=%d, syncedAt=%s）' % (
-        DATA_PATH, HTML_PATH, len(data.get('sessions', [])),
-        data.get('meta', {}).get('syncedAt', '-')
-    ))
+    # 验证：支持两种数据格式
+    #   - 新注入的原始格式 {meta, maike, target}
+    #   - 旧转换格式 {meta, sessions, targets}
+    sessions = data.get('sessions', [])
+    raw_records = data.get('maike', [])
+    total = data.get('meta', {}).get('total', 0)
+    synced_at = data.get('meta', {}).get('syncedAt', '-')
+
+    if sessions:
+        print('OK: 已把 %s 注入 %s （sessions=%d, syncedAt=%s）' % (
+            DATA_PATH, HTML_PATH, len(sessions), synced_at
+        ))
+        if len(sessions) < 500:
+            print('ERROR: sessions 数量异常（%d < 500），拒绝提交' % len(sessions), file=sys.stderr)
+            sys.exit(1)
+        if total != len(sessions):
+            print('ERROR: meta.total 与 sessions 长度不一致', file=sys.stderr)
+            sys.exit(1)
+    elif raw_records:
+        print('OK: 已把 %s 注入 %s （raw=%d, syncedAt=%s）' % (
+            DATA_PATH, HTML_PATH, len(raw_records), synced_at
+        ))
+        if len(raw_records) < 500:
+            print('ERROR: maike 原始记录数异常（%d < 500），拒绝提交' % len(raw_records), file=sys.stderr)
+            sys.exit(1)
+    else:
+        print('ERROR: 数据中没有 sessions 也没有 maike，疑似注入失败', file=sys.stderr)
+        sys.exit(1)
 
 
 if __name__ == '__main__':
