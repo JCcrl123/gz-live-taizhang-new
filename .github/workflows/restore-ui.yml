@@ -1,0 +1,75 @@
+name: 恢复最新UI
+
+on:
+  workflow_dispatch: {}      # 在 Actions 页面手动点一次即可
+
+permissions:
+  contents: write
+
+jobs:
+  restore:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: 检出仓库（完整历史，才能取到 4139c9e 的文件）
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 配置 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 从 git 历史恢复完整 index.html（主播分析V2 @ 4139c9e）
+        run: |
+          git checkout 4139c9e0691bf01b84b59c28ee8a250e7d318761 -- index.html
+          echo "已恢复 index.html"
+          wc -c index.html
+
+      - name: 运行同步脚本（直连飞书，生成 data.json）
+        env:
+          FEISHU_APP_ID: ${{ secrets.FEISHU_APP_ID }}
+          FEISHU_APP_SECRET: ${{ secrets.FEISHU_APP_SECRET }}
+          FEISHU_AUTH_MODE: ${{ secrets.FEISHU_AUTH_MODE || 'tenant' }}
+          FEISHU_REFRESH_TOKEN: ${{ secrets.FEISHU_REFRESH_TOKEN }}
+        run: python scripts/sync_data.py
+
+      - name: 注入最新数据到 index.html
+        run: python scripts/inject_preload.py
+
+      - name: 验证 index.html 完整性（防止空白页）
+        run: |
+          python - <<'PY'
+          import json, re, sys
+          with open('index.html', 'r', encoding='utf-8') as f:
+              html = f.read()
+          m = re.search(r'window\.__PRELOADED__\s*=\s*', html)
+          if not m:
+              print('ERROR: 找不到 window.__PRELOADED__')
+              sys.exit(1)
+          data, _ = json.JSONDecoder().raw_decode(html, m.end())
+          sessions = data.get('sessions', [])
+          total = data.get('meta', {}).get('total', 0)
+          print('验证通过: sessions=%d, total=%d, syncedAt=%s' % (
+              len(sessions), total, data.get('meta', {}).get('syncedAt', '-')
+          ))
+          if len(sessions) < 500:
+              print('ERROR: sessions 数量异常（%d < 500），拒绝提交' % len(sessions))
+              sys.exit(1)
+          if total != len(sessions):
+              print('ERROR: meta.total 与 sessions 长度不一致')
+              sys.exit(1)
+          PY
+
+      - name: 提交并推回仓库
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add index.html data.json
+          if git diff --cached --quiet; then
+            echo "无变化，跳过提交"
+          else
+            git commit -m "chore: 恢复主播分析V2 UI 并注入最新飞书数据"
+            git push
+          fi
