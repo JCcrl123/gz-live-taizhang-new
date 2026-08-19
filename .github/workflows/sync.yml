@@ -29,12 +29,15 @@ jobs:
           FEISHU_AUTH_MODE: ${{ secrets.FEISHU_AUTH_MODE || 'tenant' }}
           FEISHU_REFRESH_TOKEN: ${{ secrets.FEISHU_REFRESH_TOKEN }}
         run: python scripts/sync_data.py
+        
+      - name: 把最新数据注入 index.html（页面直接读内联 __PRELOADED__）
+        run: python scripts/inject_preload.py
 
       - name: 提交并推回仓库
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add data.json
+          git add data.json index.html
           if git diff --cached --quiet; then
             echo "无变化，跳过提交"
           else
