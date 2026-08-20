@@ -28,10 +28,10 @@ def main():
 
     # 修复已知损坏：某些编辑器/复制操作会把正则 /\\/g 错误拆成 /\\/ / g，
     # 导致 "g is not defined" 报错。注入前先自动修掉这种空格。
-    broken_count = html.count(r'/\\/ / g')
+    broken_count = html.count('replace(/\\/ / g,')
     if broken_count:
-        html = html.replace(r'/\\/ / g', r'/\\/g')
-        print('WARN: 修复 %d 处被拆坏的正则（/\\\\/ / g -> /\\\\/g）' % broken_count)
+        html = html.replace('replace(/\\/ / g,', 'replace(/\\/g,')
+        print('WARN: 修复 %d 处被拆坏的正则' % broken_count)
 
     # 定位 window.__PRELOADED__ = 的起始位置
     m = re.search(r'window\.__PRELOADED__\s*=\s*', html)
