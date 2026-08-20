@@ -1,29 +1,31 @@
-name: 每日同步飞书台账 → data.json
+name: 恢复最新UI
 
 on:
-  schedule:
-    # 每日 06:00 北京时间（前一日 22:00 UTC）同步
-    - cron: '0 22 * * *'
-  workflow_dispatch: {}      # 允许在 Actions 页面手动点一次立即跑
+  workflow_dispatch: {}      # 在 Actions 页面手动点一次即可
 
 permissions:
   contents: write
 
 jobs:
-  sync:
+  restore:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - name: 检出仓库
+      - name: 检出仓库（完整历史，才能取到 4139c9e 的文件）
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: 配置 Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
-      - name: 备份原始 index.html
-        run: cp index.html index.html.bak
+      - name: 从 git 历史恢复完整 index.html（主播分析V2 @ 4139c9e）
+        run: |
+          git checkout 4139c9e0691bf01b84b59c28ee8a250e7d318761 -- index.html
+          echo "已恢复 index.html"
+          wc -c index.html
 
       - name: 运行同步脚本（直连飞书，生成 data.json）
         env:
@@ -33,10 +35,10 @@ jobs:
           FEISHU_REFRESH_TOKEN: ${{ secrets.FEISHU_REFRESH_TOKEN }}
         run: python scripts/sync_data.py
 
-      - name: 把最新数据注入 index.html（页面直接读内联 __PRELOADED__）
+      - name: 注入最新数据到 index.html
         run: python scripts/inject_preload.py
 
-      - name: 验证 index.html 完整性（防止注入失败导致空白页）
+      - name: 验证 index.html 完整性（防止空白页）
         run: |
           python - <<'PY'
           import json, re, sys
@@ -63,34 +65,27 @@ jobs:
           if not sessions and not raw_records:
               print('ERROR: 既没有 sessions 也没有 maike，拒绝提交')
               sys.exit(1)
-          # 关键检查：JSON 字符串内的 </script> 必须已被转义，否则 HTML 解析器会截断 script 标签
+          # 关键检查：JSON 字符串内的 </script> 必须已被转义
           _, json_end = json.JSONDecoder().raw_decode(html, m.end())
           json_text = html[m.end():json_end]
           if '</script>' in json_text.lower():
-              print('ERROR: __PRELOADED__ JSON 内存在未转义的 </script>，会导致 JS 截断')
+              print('ERROR: __PRELOADED__ JSON 内存在未转义的 </script>')
               sys.exit(1)
           # 检查正则是否被错误拆坏
           if r'/\\/ / g' in html:
               print('ERROR: index.html 中存在被拆坏的正则 /\\\\/ / g，会导致 g is not defined')
               sys.exit(1)
-          print('OK: 无未转义的 </script>，无拆坏正则')
+          print('OK: 验证全部通过')
           PY
-
-      - name: 注入失败时恢复备份
-        if: failure()
-        run: |
-          echo "检测到注入或验证失败，恢复原始 index.html"
-          cp index.html.bak index.html || true
 
       - name: 提交并推回仓库
         run: |
-          rm -f index.html.bak
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add data.json index.html
+          git add index.html data.json
           if git diff --cached --quiet; then
             echo "无变化，跳过提交"
           else
-            git commit -m "chore: 每日从飞书同步 data.json"
+            git commit -m "chore: 恢复主播分析V2 UI 并注入最新飞书数据"
             git push
           fi
