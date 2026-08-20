@@ -25,6 +25,21 @@ jobs:
       - name: 备份原始 index.html
         run: cp index.html index.html.bak
 
+      - name: 修复 index.html 中已知的正则损坏
+        run: |
+          python - <<'PY'
+          with open('index.html', 'r', encoding='utf-8') as f:
+              html = f.read()
+          before = html.count('replace(/\\/ / g,')
+          if before:
+              html = html.replace('replace(/\\/ / g,', 'replace(/\\/g,')
+              with open('index.html', 'w', encoding='utf-8') as f:
+                  f.write(html)
+              print('FIXED: 已修复 %d 处' % before)
+          else:
+              print('OK: 未发现正则损坏')
+          PY
+
       - name: 运行同步脚本（直连飞书，生成 data.json）
         env:
           FEISHU_APP_ID: ${{ secrets.FEISHU_APP_ID }}
@@ -70,8 +85,8 @@ jobs:
               print('ERROR: __PRELOADED__ JSON 内存在未转义的 </script>，会导致 JS 截断')
               sys.exit(1)
           # 检查正则是否被错误拆坏
-          if r'/\\/ / g' in html:
-              print('ERROR: index.html 中存在被拆坏的正则 /\\\\/ / g，会导致 g is not defined')
+          if 'replace(/\\/ / g,' in html:
+              print('ERROR: index.html 中存在被拆坏的正则，会导致 g is not defined')
               sys.exit(1)
           print('OK: 无未转义的 </script>，无拆坏正则')
           PY
