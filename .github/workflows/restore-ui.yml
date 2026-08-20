@@ -29,18 +29,13 @@ jobs:
 
       - name: 修复 index.html 中已知的正则损坏
         run: |
-          python - <<'PY'
-          with open('index.html', 'r', encoding='utf-8') as f:
-              html = f.read()
-          before = html.count('replace(/\\/ / g,')
-          if before:
-              html = html.replace('replace(/\\/ / g,', 'replace(/\\/g,')
-              with open('index.html', 'w', encoding='utf-8') as f:
-                  f.write(html)
-              print('FIXED: 已修复 %d 处' % before)
-          else:
-              print('OK: 未发现正则损坏')
-          PY
+          if grep -q 'replace(/\\/ / g,' index.html; then
+            sed -i 's|replace(/\\/ / g,|replace(/\\/g,|g' index.html
+            echo 'FIXED: 已修复 /\\\\/ / g -> /\\\\/g'
+            grep -n 'replace(/\\/g,' index.html || true
+          else
+            echo 'OK: 未发现正则损坏'
+          fi
 
       - name: 运行同步脚本（直连飞书，生成 data.json）
         env:
