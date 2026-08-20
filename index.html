@@ -198,7 +198,7 @@ svg text{font-family:inherit;font-variant-numeric:tabular-nums}
 }
 
 
-/* ===== 交叉对比 / 全局联动 增强 ===== */
+/* ===== 全局联动 增强 ===== */
 .focus-bar{display:inline-flex;align-items:center;gap:7px;background:var(--pri);color:#fff;padding:6px 8px 6px 12px;border-radius:20px;font-size:12.5px;font-weight:600}
 .focus-bar .fb-n{font-weight:700}
 .focus-bar .fb-x{border:0;background:rgba(255,255,255,.25);color:#fff;border-radius:14px;padding:3px 10px;cursor:pointer;font-size:12px;font-weight:600}
@@ -777,7 +777,6 @@ window.__PRELOADED__={"meta": {"source": "飞书多维表格 · 迈科代理直�
     <button class="tab" data-p="anchor">主播分析</button>
     <button class="tab" data-p="pivot">多维透视</button>
     <button class="tab" data-p="detail">明细数据</button>
-    <button class="tab" data-p="cross">交叉对比</button>
   </div>
 
   <!-- 全局概览 -->
@@ -891,23 +890,6 @@ window.__PRELOADED__={"meta": {"source": "飞书多维表格 · 迈科代理直�
       <div class="card-b" style="padding:0"><div class="tw" style="max-height:72vh"><table id="detailTable"></table></div></div>
     </div>
   </div>
-
-  <!-- 交叉对比 -->
-  <div class="page" id="p-cross">
-    <div class="card">
-      <div class="card-h"><h3>交叉对比</h3><span class="sub">选维度 × 指标，跨对象对比而非单点呈现</span><div class="sp"></div>
-        <div class="chips" id="crossDim"></div>
-        <div class="chips" id="crossMetric"></div>
-      </div>
-      <div class="card-b">
-        <div id="crossChart"></div>
-        <div class="grid2" style="margin-top:14px">
-          <div><div class="ch-h">维度明细</div><div id="crossTable"></div></div>
-          <div><div class="ch-h">对比团队均值</div><div id="crossCmp"></div></div>
-        </div>
-      </div>
-    </div>
-  </div>
 </div>
 
 <div class="mask" id="mask" onclick="closeDrawer()"></div>
@@ -974,7 +956,7 @@ var PAL = ['#2563eb','#0e9f6e','#f59e0b','#8b5cf6','#ec4899','#06b6d4','#ef4444'
 var BUCKETS = ['早间 06-10','午间 10-14','下午 14-18','晚间 18-22','深夜 22-06'];
 var WD = ['周一','周二','周三','周四','周五','周六','周日'];
 var DATA = null, SESS = [], VIEW = [];
-var state = { d1:'', d2:'', anchor:'', slot:'', trend:'leads', pivot:'leads', sortKey:'date', sortDesc:true, focus:'', crossDim:'anchor', crossMetric:'leads', pivotDim:'wd', monthMetric:'leads', funAnchor:'', mtMetric:'cpl' };
+var state = { d1:'', d2:'', anchor:'', slot:'', trend:'leads', pivot:'leads', sortKey:'date', sortDesc:true, focus:'', pivotDim:'wd', monthMetric:'leads', funAnchor:'', mtMetric:'cpl' };
 
 /* ==================== 工具 ==================== */
 function $(s){ return document.querySelector(s); }
@@ -2201,87 +2183,13 @@ function renderAnchor2(){ renderScoreTrend(); renderPlane(); renderTagWall(); }
 function setFocus(enc){
   var name=decodeURIComponent(enc);
   state.focus = (state.focus===name) ? '' : name;
-  renderAnchor2(); renderHeat(); renderCross(); renderMatrix(); renderMonthGrid(); updateFocusBar();
+  renderAnchor2(); renderHeat(); renderMatrix(); renderMonthGrid(); updateFocusBar();
 }
-function clearFocus(){ state.focus=''; renderAnchor2(); renderHeat(); renderCross(); renderMatrix(); renderMonthGrid(); updateFocusBar(); }
+function clearFocus(){ state.focus=''; renderAnchor2(); renderHeat(); renderMatrix(); renderMonthGrid(); updateFocusBar(); }
 function updateFocusBar(){
   var el=document.getElementById('focusBar'); if(!el) return;
   if(state.focus){ el.style.display='inline-flex'; el.querySelector('.fb-n').textContent=state.focus; }
   else el.style.display='none';
-}
-
-/* ==================== 交叉对比 ==================== */
-var CROSS_DIM=[
-  {k:'anchor',t:'主播'},
-  {k:'bucket',t:'时段'},
-  {k:'wd',t:'星期'},
-  {k:'ym',t:'月份'},
-  {k:'atype',t:'主播类型'}
-];
-var CROSS_M=[
-  {k:'leads',t:'线索量',f:function(o){return o.leads;},fmt:function(v){return fmt(v);},rev:false},
-  {k:'cost',t:'消耗',f:function(o){return o.cost;},fmt:function(v){return '¥'+fmtK(v);},rev:true},
-  {k:'cpl',t:'单线索成本',f:function(o){return o.cpl;},fmt:function(v){return v==null?'—':'¥'+fmt(v,0);},rev:true},
-  {k:'lph',t:'小时产量',f:function(o){return o.lph;},fmt:function(v){return v==null?'—':fmt(v,2);},rev:false},
-  {k:'ctr',t:'小风车点击率',f:function(o){return o.ctr;},fmt:function(v){return v==null?'—':pct(v,2);},rev:false}
-];
-function crossField(s, dim){
-  if(dim==='anchor') return s.a;
-  if(dim==='bucket') return s.bucket;
-  if(dim==='wd') return WD[s.wd];
-  if(dim==='ym') return s.ym;
-  if(dim==='atype') return s.atype;
-  return s.a;
-}
-function renderCross(){
-  var dim=state.crossDim, mk=state.crossMetric;
-  var m=CROSS_M.filter(function(x){return x.k===mk;})[0];
-  if(!m){ $('#crossChart').innerHTML=''; return; }
-  var byD={}; VIEW.forEach(function(s){ var k=crossField(s,dim); (byD[k]=byD[k]||[]).push(s); });
-  var arr=[]; for(var k in byD){ var a=agg(byD[k]); if(a.n>0) arr.push({name:k,a:a}); }
-  if(!arr.length){ $('#crossChart').innerHTML='<div class="empty">当前范围无有效数据</div>'; $('#crossTable').innerHTML=''; $('#crossCmp').innerHTML=''; return; }
-  if(dim==='wd'){ arr.sort(function(x,y){ return WD.indexOf(x.name)-WD.indexOf(y.name); }); }
-  else if(dim==='ym'){ arr.sort(function(x,y){ return x.name<y.name?1:-1; }); }
-  else { arr.sort(function(x,y){ return (m.f(y.a)||0)-(m.f(x.a)||0); }); }
-  var W=1000, H=Math.max(220, arr.length*44+24), pl=118, pr=150, pt=14, pb=14, iw=W-pl-pr;
-  var bh=Math.min(30,(H-pt-pb)/arr.length-8);
-  var vals=arr.map(function(r){return m.f(r.a)||0;});
-  var mx=Math.max.apply(null,vals)||1;
-  var team=agg(VIEW), tv=m.f(team);
-  var h='';
-  arr.forEach(function(r,i){
-    var y=pt+i*((H-pt-pb)/arr.length)+((H-pt-pb)/arr.length-bh)/2;
-    var v=m.f(r.a)||0, w=mx? v/mx*iw:0, c=colorOf(r.name);
-    var on = !state.focus || state.focus===r.name;
-    h+='<g'+(dim==='anchor'?' onclick="setFocus(\''+encodeURIComponent(r.name)+'\')" style="cursor:pointer"':'')+' opacity="'+(on?1:0.25)+'">';
-    h+='<text x="'+(pl-8)+'" y="'+(y+bh/2+4).toFixed(1)+'" text-anchor="end" font-size="12.5" font-weight="600" fill="var(--tx)">'+esc(r.name)+'</text>';
-    h+='<rect x="'+pl+'" y="'+y.toFixed(1)+'" width="'+w.toFixed(1)+'" height="'+bh.toFixed(1)+'" rx="4" fill="'+c+'" opacity=".85"><title>'+esc(r.name)+' · '+m.t+'：'+m.fmt(v)+' · '+r.a.n+' 场</title></rect>';
-    h+='<text x="'+(pl+w+8).toFixed(1)+'" y="'+(y+bh/2+4).toFixed(1)+'" font-size="12" font-weight="700" fill="var(--tx)">'+m.fmt(v)+'</text>';
-    h+='</g>';
-  });
-  if(tv!=null){
-    var tx=pl+(tv/mx)*iw;
-    h+='<line x1="'+tx.toFixed(1)+'" y1="'+pt+'" x2="'+tx.toFixed(1)+'" y2="'+(H-pb)+'" stroke="var(--tx3)" stroke-width="1.4" stroke-dasharray="5 4"/>'+
-       '<text x="'+(tx+5).toFixed(1)+'" y="'+(pt+11)+'" font-size="10.5" fill="var(--tx3)">团队均值 '+m.fmt(tv)+'</text>';
-  }
-  $('#crossChart').innerHTML=svgEl('0 0 '+W+' '+H, Math.min(H,460))+h+'</svg><div class="lg"><span>纵轴：'+m.t+(dim==='anchor'?' · 点击柱子聚焦该主播':'')+'</span></div>';
-
-  var dt=CROSS_DIM.filter(function(x){return x.k===dim;})[0].t;
-  var th='<thead><tr><th>'+dt+'</th><th class="tr">场次</th><th class="tr">消耗</th><th class="tr">线索</th><th class="tr">单线索成本</th><th class="tr">小时产量</th><th class="tr">'+m.t+'</th></tr></thead><tbody>';
-  arr.forEach(function(r){
-    th+='<tr'+(state.focus&&state.focus===r.name?' class="hl"':'')+'><td><b>'+esc(r.name)+'</b></td><td class="tr num">'+fmt(r.a.n)+'</td><td class="tr num">¥'+fmtK(r.a.cost)+'</td><td class="tr num"><b>'+fmt(r.a.leads)+'</b></td><td class="tr num">'+(r.a.cpl==null?'—':'¥'+fmt(r.a.cpl,0))+'</td><td class="tr num">'+fmt(r.a.lph,2)+' </td><td class="tr num">'+m.fmt(m.f(r.a)||0)+'</td></tr>';
-  });
-  $('#crossTable').innerHTML='<table class="ctab">'+th+'</tbody></table>';
-
-  var cmp=arr.filter(function(r){return m.f(r.a)!=null;}).map(function(r){ return {name:r.name, v:m.f(r.a)}; });
-  if(cmp.length){
-    cmp.sort(function(x,y){ return m.rev ? (x.v-y.v) : (y.v-x.v); });
-    var best=cmp[0], worst=cmp[cmp.length-1];
-    var d1=m.rev?'最优（最低）':'最优（最高）', d2=m.rev?'最差（最高）':'最差（最低）';
-    $('#crossCmp').innerHTML='<div class="cmp-row"><span class="cmp-k">'+d1+'</span><b>'+esc(best.name)+'</b><span class="num">'+m.fmt(best.v)+'</span></div>'+
-      '<div class="cmp-row"><span class="cmp-k">'+d2+'</span><b>'+esc(worst.name)+'</b><span class="num">'+m.fmt(worst.v)+'</span></div>'+
-      (tv!=null?'<div class="cmp-row"><span class="cmp-k">团队均值</span><b>—</b><span class="num">'+m.fmt(tv)+'</span></div>':'');
-  } else $('#crossCmp').innerHTML='<div class="empty" style="padding:10px">该指标无有效数据</div>';
 }
 
 /* ==================== 主播详情抽屉 ==================== */
@@ -3111,7 +3019,7 @@ function renderAll(){
   renderOverview3();
   renderAnchor2();
   renderPivotFunnel(); renderMatrix(); renderMonthTrend(); renderMonthGrid(); renderHeat();
-  renderDetail(); renderCross(); updateFocusBar();
+  renderDetail(); updateFocusBar();
 }
 function renderAllAndChips(){
   renderAll();
@@ -3150,11 +3058,6 @@ function initUI(){
   $$('#pivotMetric .chip').forEach(function(b){
     b.onclick=function(){ $$('#pivotMetric .chip').forEach(function(x){x.classList.remove('on');}); b.classList.add('on'); state.pivot=b.dataset.k; renderHeat(); };
   });
-  // 交叉对比：维度 / 指标
-  $('#crossDim').innerHTML=CROSS_DIM.map(function(x){ return '<button class="chip'+(x.k===state.crossDim?' on':'')+'" data-k="'+x.k+'">'+x.t+'</button>'; }).join('');
-  $$('#crossDim .chip').forEach(function(b){ b.onclick=function(){ $$('#crossDim .chip').forEach(function(x){x.classList.remove('on');}); b.classList.add('on'); state.crossDim=b.dataset.k; renderCross(); }; });
-  $('#crossMetric').innerHTML=CROSS_M.map(function(x){ return '<button class="chip'+(x.k===state.crossMetric?' on':'')+'" data-k="'+x.k+'">'+x.t+'</button>'; }).join('');
-  $$('#crossMetric .chip').forEach(function(b){ b.onclick=function(){ $$('#crossMetric .chip').forEach(function(x){x.classList.remove('on');}); b.classList.add('on'); state.crossMetric=b.dataset.k; renderCross(); }; });
   // 热力图点击聚焦（事件委托，避免重写单元格字符串）
   var hc=document.getElementById('heatChart');
   if(hc) hc.addEventListener('click', function(e){
