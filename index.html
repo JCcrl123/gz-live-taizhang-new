@@ -3426,9 +3426,11 @@ function startLoad(){
   }
   // 1) 立即渲染内联数据，保证 GitHub Pages 等无 COS 环境也能正常打开
   usePreloaded();
-  // 2) 后台尝试拉取 COS 更新（仅 Drive/SCF 等已配置环境生效）
-  if(!window.COS_DATA_URL) return;
-  fetch(window.COS_DATA_URL, {cache:'no-store'})
+  // 2) 后台优先拉取仓库 data.json（每日同步脚本已刷新），失败再回退 COS
+  var SRC = window.REMOTE_DATA_URL || window.COS_DATA_URL;
+  window.__DATA_SRC = window.REMOTE_DATA_URL ? '仓库实时' : 'COS 实时';
+  if(!SRC) return;
+  fetch(SRC, {cache:'no-store'})
     .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
     .then(function(d){
       var remote = (d.meta&&d.meta.syncedAt)||'';
@@ -3436,8 +3438,10 @@ function startLoad(){
       if(remote && local && remote <= local) return;
       window.__LAST_SYNC_AT = remote;
       initFromRaw(d);
+      var bel = document.getElementById('syncBadge');
+      if(bel){ bel.textContent = '数据来源：' + window.__DATA_SRC + ' · 同步于 ' + remote; bel.style.display=''; }
     })
-    .catch(function(e){ console.warn('[load] COS 拉取失败，保持内联数据：', e.message); });
+    .catch(function(e){ console.warn('[load] 远程拉取失败，保持内联数据：', e.message); });
 }
 if(document.readyState === 'loading'){
   document.addEventListener('DOMContentLoaded', startLoad);
@@ -3464,18 +3468,19 @@ if(document.readyState === 'loading'){
       try { localStorage.setItem('gz_data_cache', JSON.stringify(d)); } catch(e){}
       normalizeSessions(d.sessions);   // ★ 同步路径同样需要归一化
       boot(d);
-      badge('COS 实时', remote);
+      badge(window.__DATA_SRC||'COS 实时', remote);
       return true;
     } catch(e){ console.warn('applyIfNewer fail', e); return false; }
   }
   async function pull(){
-    if(!window.COS_DATA_URL) return;
+    var SRC = window.REMOTE_DATA_URL || window.COS_DATA_URL;
+    if(!SRC) return;
     try {
-      var r = await fetch(window.COS_DATA_URL, {cache:'no-store'});
+      var r = await fetch(SRC, {cache:'no-store'});
       if(!r.ok) throw new Error('HTTP '+r.status);
       var d = await r.json();
-      if(applyIfNewer(d)){ console.log('[sync] COS 数据已更新'); }
-    } catch(e){ console.warn('[sync] COS 拉取失败', e.message); }
+      if(applyIfNewer(d)){ console.log('[sync] 数据已更新'); }
+    } catch(e){ console.warn('[sync] 远程拉取失败', e.message); }
   }
   window.addEventListener('load', function(){
     pull();
