@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>陈瑞霖 · 作品集</title>
+<style>
+  :root{ --blue:#2563eb; --blue-d:#1d4ed8; --blue-bg:#eef4ff; --ink:#1f2329; --muted:#6b7280; --line:#e6eaf0; }
+  *{ margin:0; padding:0; box-sizing:border-box; }
+  body{ font-family:"PingFang SC","Microsoft YaHei",sans-serif; color:var(--ink); background:#eef1f5; line-height:1.6; font-size:13px; }
+  .page{ width:210mm; min-height:297mm; margin:16px auto; background:#fff; padding:15mm 16mm; box-shadow:0 6px 26px rgba(31,41,55,.12); border-radius:6px; }
+
+  .cover{ text-align:center; padding:38px 0 26px; border-bottom:2px solid var(--blue); margin-bottom:8px; }
+  .cover .name{ font-size:30px; font-weight:800; letter-spacing:2px; }
+  .cover .role{ font-size:14px; font-weight:600; color:var(--blue); margin-top:6px; }
+  .cover .meta{ font-size:12px; color:var(--muted); margin-top:8px; }
+
+  .sec-title{ font-size:15px; font-weight:800; margin:22px 0 8px; display:flex; align-items:center; gap:8px; }
+  .sec-title::before{ content:""; width:7px; height:17px; background:linear-gradient(var(--blue),var(--blue-d)); border-radius:3px; display:inline-block; }
+  .sec-sub{ font-size:11.5px; color:var(--muted); margin-bottom:12px; }
+
+  .grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:14px; }
+  .item{ border:1px solid var(--line); border-radius:8px; overflow:hidden; background:#fff; }
+  .shot{ width:100%; aspect-ratio:16/10; background:#f4f7fb; display:flex; align-items:center; justify-content:center; border-bottom:1px solid var(--line); }
+  .shot img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .cap{ padding:8px 10px; }
+  .cap .t{ font-size:12px; font-weight:700; color:var(--blue-d); margin-bottom:2px; }
+  .cap .d{ font-size:11px; color:#4b5563; }
+
+  .note{ margin-top:18px; padding:10px 12px; background:var(--blue-bg); border:1px solid #d4e2ff; border-radius:8px; font-size:11px; color:#374151; }
+  .note b{ color:var(--blue-d); }
+
+  @media print{ body{ background:#fff; } .page{ margin:0; box-shadow:none; border-radius:0; width:100%; min-height:auto; } }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="cover">
+    <div class="name">陈瑞霖</div>
+    <div class="role">效果广告投放专家 · 全链路增长赋能</div>
+    <div class="meta">作品集：区域地图洞察 / 全链路数据台账 / 爆款短视频方法论 ｜ 求职意向：效果广告投放专家 / 投放负责人</div>
+  </div>
+
+  <!-- 组 A：区域地图洞察 -->
+  <div class="sec-title">一、区域地图洞察（LBS 投放策略）</div>
+  <div class="sec-sub">从省域下钻到城市/区县，用 LBS 热力与商机构成定位高潜市场，支撑分区域预算分配与经销商赋能。</div>
+  <div class="grid">
+    <div class="item">
+      <div class="shot"><img src="images/01.jpg" alt="华南投放区域地图看板"></div>
+      <div class="cap"><div class="t">华南投放区域 & 区县看板</div><div class="d">省级视角看投放覆盖与商机分布，识别头部区域与尾部短板，辅助预算倾斜决策。</div></div>
+    </div>
+    <div class="item">
+      <div class="shot"><img src="images/02.jpg" alt="城市层级地图看板"></div>
+      <div class="cap"><div class="t">城市层级地图看板</div><div class="d">省内城市级下钻，结合覆盖人口与商机数，精细化定位高价值城市与增长空间。</div></div>
+    </div>
+  </div>
+
+  <!-- 组 B：全链路数据台账 -->
+  <div class="sec-title">二、全链路数据台账</div>
+  <div class="sec-sub">覆盖总览 KPI、转化漏斗、交叉维度分析，把「投放 → 留资 → 邀约 → 成交」链路数据化、可视化。</div>
+  <div class="grid">
+    <div class="item">
+      <div class="shot"><img src="images/03.jpg" alt="数据台账总览"></div>
+      <div class="cap"><div class="t">数据台账总览</div><div class="d">核心成果、效率标杆、风险预警、行动建议四模块，一眼锁定当日关键动作。</div></div>
+    </div>
+    <div class="item">
+      <div class="shot"><img src="images/04.jpg" alt="链路蒸馏漏斗"></div>
+      <div class="cap"><div class="t">链路蒸馏：消耗 → 转化 → 成本</div><div class="d">成本转化链与流量转化链双漏斗，定位每一层流失与优化空间，反哺投放策略。</div></div>
+    </div>
+    <div class="item">
+      <div class="shot"><img src="images/05.jpg" alt="月度交叉可视化"></div>
+      <div class="cap"><div class="t">月度交叉可视化 & 热力网格</div><div class="d">时间趋势 × 主播 × 时段多维度交叉，找到高产出时段与主播组合，指导排期与预算。</div></div>
+    </div>
+  </div>
+
+  <!-- 组 C：爆款短视频方法论 -->
+  <div class="sec-title">三、爆款短视频方法论</div>
+  <div class="sec-sub">结构化拆解爆款视频，从 3s 引子到行动号召，形成可复刻、可培训的内容生产公式。</div>
+  <div class="grid">
+    <div class="item">
+      <div class="shot"><img src="images/06.jpg" alt="爆款视频结构概述"></div>
+      <div class="cap"><div class="t">爆款视频结构概述</div><div class="d">基于数据水平归纳 3s 引子 · 10s 痛点 · 功能点 · 结尾的环环相扣结构。</div></div>
+    </div>
+    <div class="item">
+      <div class="shot"><img src="images/07.jpg" alt="爆款视频制作公式"></div>
+      <div class="cap"><div class="t">爆款视频制作"公式"</div><div class="d">30-35s 视频分镜表：时间轴 × 内容 × 示例 × 结构须知 × 字体/画面运用，可直接落地。</div></div>
+    </div>
+  </div>
+
+  <div class="note">
+    <b>合规与脱敏说明：</b>本作品集为公开版，所有截图均已做数值与品牌标识脱敏处理，仅展示个人分析方法与能力框架，不含前雇主敏感业务数据。
+  </div>
+
+</div>
+</body>
+</html>
